@@ -1,0 +1,24 @@
+{
+    "ETHUSDT": {
+        "buyOrders": [
+            {
+                "price": 3000,
+                "qty": 10
+            }
+        ],
+        "sellOrders": [
+            {
+                "price": 3020,
+                "qty": 10
+            },
+            {
+                "price": 3010,
+                "qty": 10
+            },
+            {
+                "price": 3010,
+                "qty": 10
+            }
+        ]
+    }
+}
