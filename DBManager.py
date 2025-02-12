@@ -62,6 +62,9 @@ class DBManager:
         if coin in self.data and trade_type in ['buyOrders', 'sellOrders']:
             return any(trade['price'] == price for trade in self.data[coin][trade_type])
         return False
+
+
+"""
 # Usage example
 if __name__ == "__main__":
     db_manager = DBManager('/home/batuhanokmen/python/gridBinance/trades.json')
@@ -72,3 +75,4 @@ if __name__ == "__main__":
     print(db_manager.get_trades('ETHUSDT'))
     db_manager.delete_trade('ETHUSDT', 'buyOrders', 3000)
     print(db_manager.get_trades('ETHUSDT'))
+"""

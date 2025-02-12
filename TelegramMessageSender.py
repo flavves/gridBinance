@@ -14,6 +14,7 @@ class TelegramMessageSender:
         else:
             return f"Failed to send message: {response.status_code} - {response.text}"
 
+"""
 # Usage example
 if __name__ == "__main__":
     TELEGRAM_BOT_TOKEN = 'your_telegram_bot_token'
@@ -21,3 +22,4 @@ if __name__ == "__main__":
     message_sender = TelegramMessageSender(TELEGRAM_BOT_TOKEN, CHAT_ID)
     response = message_sender.send_message("Hello, this is a test message!")
     print(response)
+"""
