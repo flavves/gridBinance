@@ -2,10 +2,13 @@
 from binance.client import Client
 from binance.enums import *
 import DBManager
+import TelegramMessageSender
 class BinanceTrader:
-    def __init__(self, api_key, api_secret,db_file_path):
+    def __init__(self, api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id):
         self.client = Client(api_key, api_secret)
         self.db_manager = DBManager.DBManager(db_file_path)
+        self.telegram_sender = TelegramMessageSender.TelegramMessageSender(telegram_bot_token, telegram_chat_id)
+
     def place_order(self, symbol, side, order_type, quantity, price=None):
         """
         Place an order on Binance.
@@ -42,10 +45,15 @@ class BinanceTrader:
             trade_type = 'buy' if side == SIDE_BUY else 'sell'
             self.db_manager.add_trade(symbol, trade_type, price, quantity)
 
+            #   Send a message to Telegram
+            message = f"Order placed: {trade_type.upper()} {quantity} {symbol} at {price if price else 'market price'}"
+            self.telegram_sender.send_message(message)
 
             return order
         except Exception as e:
-            print(f"An error occurred: {e}")
+            error_message = f"An error occurred: {e}"
+            print(error_message)
+            self.telegram_sender.send_message(error_message)
             return None
 
     def buy(self, symbol, order_type, quantity, price=None):

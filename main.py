@@ -10,8 +10,10 @@ if __name__ == "__main__":
     API_SECRET = os.getenv('BINANCE_API_SECRET')
     home_dir = os.path.expanduser('~')
     DB_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'trades.json')
+    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-    trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH)
+    trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     symbol = 'BTCUSDT'
     order_type = 'LIMIT'
     quantity = 0.001
