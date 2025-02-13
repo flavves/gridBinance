@@ -1,15 +1,19 @@
 import os
 from BinanceTrader import BinanceTrader
+import PriceUpdater
+from dotenv import load_dotenv
 LIMIT="LIMIT"
 MARKET="MARKET"
-
+load_dotenv()
 def run_bot():
+
     API_KEY = os.getenv('BINANCE_API_KEY')
     API_SECRET = os.getenv('BINANCE_API_SECRET')
     home_dir = os.path.expanduser('~')
     DB_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'trades.json')
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
 
     trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     symbol = 'BTCUSDT'
