@@ -68,11 +68,14 @@ class DBManager:
 # Usage example
 if __name__ == "__main__":
     db_manager = DBManager('/home/batuhanokmen/python/gridBinance/trades.json')
-    print(db_manager.add_trade('ETHUSDT', 'buy', 3000, 10))
-    print(db_manager.add_trade('ETHUSDT', 'sell', 3010, 10))
-    print(db_manager.get_trades('ETHUSDT'))
-    db_manager.update_trade('ETHUSDT', 'sellOrders', 0, price=3020)
-    print(db_manager.get_trades('ETHUSDT'))
-    db_manager.delete_trade('ETHUSDT', 'buyOrders', 3000)
-    print(db_manager.get_trades('ETHUSDT'))
+    print(db_manager.add_trade('ADAUSDT', 'buy', 0.70, 10))
+    print(db_manager.add_trade('ADAUSDT', 'buy', 0.71, 10))
+    print(db_manager.add_trade('ADAUSDT', 'sell', 0.79, 9))
+    print(db_manager.add_trade('ADAUSDT', 'sell', 0.80, 9))
+    print(db_manager.add_trade('CAKEUSDT', 'buy', 2.22, 10))
+    print(db_manager.add_trade('CAKEUSDT', 'sell', 2.96, 10))
+    #db_manager.update_trade('ETHUSDT', 'sellOrders', 0, price=3020)
+    #print(db_manager.get_trades('ETHUSDT'))
+    #db_manager.delete_trade('ETHUSDT', 'buyOrders', 3000)
+    #print(db_manager.get_trades('ETHUSDT'))
 """
