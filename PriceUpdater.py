@@ -43,8 +43,17 @@ class PriceUpdater:
         self.running = False
         for thread in self.threads:
             thread.join()
-"""
-# Usage example
+            
+    def startThread(self):
+        self.start()
+        while True:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                self.stop()
+                break
+
+"""# Usage example
 if __name__ == "__main__":
     trades_file = "/home/batuhanokmen/python/gridBinance/trades.json"
     output_file = "/home/batuhanokmen/python/gridBinance/current_prices.json"
