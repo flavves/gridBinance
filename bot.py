@@ -6,6 +6,7 @@ import threading
 from ReadExcellData import ReadExcelData
 import time
 import json
+import TelegramMessageSender
 LIMIT="LIMIT"
 MARKET="MARKET"
 load_dotenv()
@@ -15,6 +16,12 @@ global API_KEY, API_SECRET, DB_FILE_PATH,DB_OUTPUT_FILE_PATH,EXCELL_FILE_PATH, T
 #flags
 global BULK_PURCHASE_FLAG
 BULK_PURCHASE_FLAG = True
+#objects
+global telegram_sender
+
+
+
+
 def startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID):  
     trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     return trader
@@ -27,6 +34,7 @@ def startPriceUpdater(trades_file, output_file, interval=10):
 def run_bot():
     global API_KEY, API_SECRET, DB_FILE_PATH,DB_OUTPUT_FILE_PATH,EXCELL_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
     global BULK_PURCHASE_FLAG
+    global telegram_sender
     API_KEY = os.getenv('BINANCE_API_KEY')
     API_SECRET = os.getenv('BINANCE_API_SECRET')
     home_dir = os.path.expanduser('~')
@@ -35,6 +43,9 @@ def run_bot():
     EXCELL_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'files', 'grid.xlsx')
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+    telegram_sender = TelegramMessageSender.TelegramMessageSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+
 
     print("PriceUpdater Başlatılıyor thread")
     t1 = threading.Thread(target=startPriceUpdater, args=(DB_FILE_PATH, DB_OUTPUT_FILE_PATH, 10))
@@ -96,6 +107,7 @@ def bulkPurchase(symbol, readExcelData, trader):
     binanceMoney = trader.get_usdt_balance()
     bankMoney=binanceMoney
     if bankMoney is None:
+        telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
         print("Banka Hesabınızda Yeterli Bakiye Yok Error")
         return
     closest_indices = readExcelData.get_value_index("Fiyatlar", currentPrice)
@@ -116,6 +128,7 @@ def bulkPurchase(symbol, readExcelData, trader):
         if buy_price > currentPrice:
             bankMoney -= buy_price * buy_quantity
             if bankMoney < 0:
+                telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
                 print("Banka Hesabınızda Yeterli Bakiye Yok")
                 break
             totalBuyQuantity += buy_quantity
@@ -123,8 +136,9 @@ def bulkPurchase(symbol, readExcelData, trader):
             print("buy_price", buy_price)
             print("totalBuyQuantity", totalBuyQuantity)
             # bu sadece veriye eklenmesi icin yapılır bir emir gondermez telegrama mesaj iletilir
-            trader.sell(symbol, buy_price, sell_quantity, MARKET, test=True)
+            #trader.sell(symbol, buy_price, sell_quantity, MARKET, test=True)
     print("Toplu alım bitti totalBuyQuantity", totalBuyQuantity)
+    telegram_sender.send_message("Toplu alım bitti totalBuyQuantity", totalBuyQuantity)
     ## şimdi adetler belirlendi anlık fiyat üzerinden market emir ile total adet üzerinden alım yapılacak
     trader.buy(symbol, currentPrice, totalBuyQuantity, MARKET)
     #simdi emirlerin gerçeklesmesini bekleyeceğiz buraya bir while atıp burada alim adeti ile hesabımızdaki adet esit oluncaya kadar bekleyeceğiz.
