@@ -40,3 +40,13 @@ def test_sell_order(trader):
     assert response["status"] == "success"
     trader.db_manager.add_trade.assert_called_once()
     trader.telegram_sender.send_message.assert_called_once()
+
+def test_get_usdt_balance(trader):
+    trader.client.get_asset_balance = MagicMock(return_value={'free': '100.0'})
+    balance = trader.get_usdt_balance()
+    assert balance == 100.0
+
+def test_get_coin_balance(trader):
+    trader.client.get_asset_balance = MagicMock(return_value={'free': '50.0'})
+    balance = trader.get_coin_balance('BTC')
+    assert balance == 50.0

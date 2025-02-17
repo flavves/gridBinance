@@ -1,4 +1,3 @@
-
 from binance.client import Client
 from binance.enums import *
 import DBManager
@@ -81,12 +80,12 @@ class BinanceTrader:
         """
         return self.place_order(symbol, SIDE_SELL, order_type, quantity, price, test)
 
-def get_usdt_balance(self):
+    def get_usdt_balance(self):
         """
-            Returns the USDT balance in the Binance account.
+        Returns the USDT balance in the Binance account.
 
-            :return: USDT balance
-            """
+        :return: USDT balance
+        """
         try:
             balance = self.client.get_asset_balance(asset='USDT')
             return float(balance['free'])
@@ -96,13 +95,13 @@ def get_usdt_balance(self):
             self.telegram_sender.send_message(error_message)
             return None
 
-def get_coin_balance(self, symbol):
+    def get_coin_balance(self, symbol):
         """
-            Returns the balance of the specified cryptocurrency.
+        Returns the balance of the specified cryptocurrency.
 
-            :param symbol: Cryptocurrency symbol (e.g., 'BTC')
-            :return: Coin balance
-            """
+        :param symbol: Cryptocurrency symbol (e.g., 'BTC')
+        :return: Coin balance
+        """
         try:
             balance = self.client.get_asset_balance(asset=symbol)
             return float(balance['free'])
