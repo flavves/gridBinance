@@ -1,16 +1,16 @@
 import time
 import json
 class BulkPurchase:
-    def __init__(self, symbol, readExcelData, trader, data,telegram_sender,DB_OUTPUT_FILE_PATH):
+    def __init__(self,trader, readExcelData,symbol,DB_OUTPUT_FILE_PATH,telegram_sender, data ):
         self.symbol = symbol
         self.readExcelData = readExcelData
         self.trader = trader
         self.data = data
+        self.telegram_sender = telegram_sender
+        self.DB_OUTPUT_FILE_PATH = DB_OUTPUT_FILE_PATH
         self.currentPrice = self.getCurrentPrice(symbol)
         self.binanceMoney = trader.get_usdt_balance() / 2
         self.bankMoney = self.binanceMoney
-        self.send_message = telegram_sender
-        self.DB_OUTPUT_FILE_PATH = DB_OUTPUT_FILE_PATH
 
 
     def getCurrentPrice(self,coin_name):
@@ -22,7 +22,7 @@ class BulkPurchase:
 
     def execute_bulk_purchase(self):
         if self.bankMoney is None:
-            self.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
+            self.telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
             print("Banka Hesabınızda Yeterli Bakiye Yok Error")
             return
 
@@ -42,7 +42,7 @@ class BulkPurchase:
             if buy_price > self.currentPrice:
                 self.bankMoney -= buy_price * buy_quantity
                 if self.bankMoney < 0:
-                    self.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
+                    self.telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
                     print("Banka Hesabınızda Yeterli Bakiye Yok")
                     break
                 totalBuyQuantity += buy_quantity
@@ -51,7 +51,7 @@ class BulkPurchase:
                 print("totalBuyQuantity", totalBuyQuantity)
 
         print("Toplu alım bitti totalBuyQuantity", totalBuyQuantity)
-        self.send_message(f"Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
+        self.telegram_sender.send_message(f"Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
         self.trader.buy(self.symbol, self.currentPrice, totalBuyQuantity, "MARKET")
 
         while True:
@@ -82,7 +82,7 @@ class BulkPurchase:
                 print("totalBuyQuantity", totalBuyQuantity)
                 self.trader.sell(self.symbol, buy_price, sell_quantity, "LIMIT")
 
-        self.send_message("Satis emirleri verildi simdi alis emirleri verilecek!")
+        self.telegram_sender.send_message("Satis emirleri verildi simdi alis emirleri verilecek!")
 
         totalBuyQuantity = 0
         self.binanceMoney = self.trader.get_usdt_balance() / 2
@@ -99,7 +99,7 @@ class BulkPurchase:
             if self.currentPrice > buy_price:
                 self.bankMoney -= buy_price * buy_quantity
                 if self.bankMoney < 0:
-                    self.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
+                    self.telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
                     print("Banka Hesabınızda Yeterli Bakiye Yok")
                     break
                 totalBuyQuantity += buy_quantity
@@ -107,4 +107,4 @@ class BulkPurchase:
                 print("buy_price", buy_price)
                 print("totalBuyQuantity", totalBuyQuantity)
 
-        self.send_message("Toplu alım bitti")
+        self.telegram_sender.send_message("Toplu alım bitti")

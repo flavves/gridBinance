@@ -74,7 +74,7 @@ def run_bot():
             print("symbol", symbol)
             if BULK_PURCHASE_FLAG:
                 
-                bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender)
+                bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender,data)
                 bulkPurchase.execute_bulk_purchase()
                 BULK_PURCHASE_FLAG = False
 

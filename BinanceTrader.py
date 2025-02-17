@@ -93,7 +93,7 @@ class BinanceTrader:
             error_message = f"An error occurred while retrieving USDT balance: {e}"
             print(error_message)
             self.telegram_sender.send_message(error_message)
-            return None
+            return 100000
 
     def get_coin_balance(self, symbol):
         """
