@@ -101,6 +101,26 @@ class ReadExcelData:
                 return None
         else:
             print("No data available. Please read the data first.")
+            return None
+
+    def get_value_index(self, column_name, value):
+        if self.data is not None:
+            if column_name in self.data.columns:
+                indices = self.data.index[self.data[column_name] == value].tolist()
+                if indices:
+                    return indices
+                else:
+                    closest_value = self.data[column_name].iloc[(self.data[column_name] - value).abs().argsort()[:1]].values[0]
+                    closest_indices = self.data.index[self.data[column_name] == closest_value].tolist()
+                    print(f"Exact value '{value}' not found. Closest value is '{closest_value}'.")
+                    return closest_indices
+            else:
+                print(f"Column '{column_name}' does not exist.")
+                return None
+        else:
+            print("No data available. Please read the data first.")
+            return None
+
 """
 # Usage example
 if __name__ == "__main__":
@@ -111,5 +131,8 @@ if __name__ == "__main__":
     data = excel_reader.get_data()
     if data is not None:
         print(data.head())
-
+        # Example usage of get_value_index
+        indices = excel_reader.get_value_index('Price', 100)
+        if indices is not None:
+            print(f"Indices of value 100 in 'Price' column: {indices}")
 """

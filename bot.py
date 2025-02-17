@@ -5,10 +5,16 @@ from dotenv import load_dotenv
 import threading
 from ReadExcellData import ReadExcelData
 import time
+import json
 LIMIT="LIMIT"
 MARKET="MARKET"
 load_dotenv()
  
+#defines
+global API_KEY, API_SECRET, DB_FILE_PATH,DB_OUTPUT_FILE_PATH,EXCELL_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+#flags
+global BULK_PURCHASE_FLAG
+BULK_PURCHASE_FLAG = True
 def startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID):  
     trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     return trader
@@ -19,7 +25,8 @@ def startPriceUpdater(trades_file, output_file, interval=10):
     return price_updater
 
 def run_bot():
-
+    global API_KEY, API_SECRET, DB_FILE_PATH,DB_OUTPUT_FILE_PATH,EXCELL_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+    global BULK_PURCHASE_FLAG
     API_KEY = os.getenv('BINANCE_API_KEY')
     API_SECRET = os.getenv('BINANCE_API_SECRET')
     home_dir = os.path.expanduser('~')
@@ -39,10 +46,120 @@ def run_bot():
     
     trader = startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     print("BinanceTrader Başlatıldı")
-    readExcelData = ReadExcelData(EXCELL_FILE_PATH)
+    
     while 1:
+        readExcelData = ReadExcelData(EXCELL_FILE_PATH)
         time.sleep(1)
         readExcelData.read_data()
         data = readExcelData.get_data()
         if data is not None:
             print(data.head())
+        sheet_names = readExcelData.get_sheet_names()
+        
+
+        for sheet_name in sheet_names:
+            symbol = sheet_name  # Ensure symbol is a string
+            print("symbol", symbol)
+            if BULK_PURCHASE_FLAG:
+                bulkPurchase(symbol, readExcelData, trader)
+                BULK_PURCHASE_FLAG = False
+            """ for i in range(0, data.shape[0]):
+                buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
+                buy_quantity = readExcelData.get_cell_data(i, "Alis Adet")
+                sell_quantity = readExcelData.get_cell_data(i, "Satis Adet")
+                start_ignore = readExcelData.get_cell_data(i, "BaslangicYoksay")
+                print("-_-_-_-_-_")
+                print("start_ignore", start_ignore)
+                print("buy_price", buy_price)
+                print("buy_quantity", buy_quantity)
+                print("sell_quantity", sell_quantity)
+                print("-_-_-_-_-_")"""
+            
+
+def getCurrentPrice(coin_name):
+    with open(DB_OUTPUT_FILE_PATH, 'r') as file:
+        data = json.load(file)
+        print("data", data)
+        return data.get(coin_name, "Coin not found")
+
+
+"""
+alış fiyatına bak
+alış fiyatının üstündeki değerlerde elimizdeki total para kadar alım yapılacak bu alım market emir olacak
+ama burada baslangic yoksay değeri varsa o değer kadar alım yapılmayacak üstündeki değerlerde alım yapılacak
+yapılan alımlar kaydedilecek ve sonrasında biraz beklenip alt kısımlarda elimizdeki adeti sağlayacak kadar alış yapılacak
+"""
+def bulkPurchase(symbol, readExcelData, trader):
+    currentPrice = getCurrentPrice(symbol)
+    binanceMoney=100000
+    bankMoney = 100000
+    binanceMoney = trader.get_usdt_balance()
+    bankMoney=binanceMoney
+    if bankMoney is None:
+        print("Banka Hesabınızda Yeterli Bakiye Yok Error")
+        return
+    closest_indices = readExcelData.get_value_index("Fiyatlar", currentPrice)
+    # closest_indices ten başlayarak üstündeki değerlerde alış yapılacak bankAmount kadar alış yapılacak
+    print("closest_indices", closest_indices)
+    totalBuyQuantity = 0
+    for i in range(closest_indices[0], 0, -1):
+        buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
+        buy_quantity = readExcelData.get_cell_data(i, "Alis Adet")
+        sell_quantity = readExcelData.get_cell_data(i, "Satis Adet")
+        start_ignore = readExcelData.get_cell_data(i, "BaslangicYoksay")
+
+        
+        # start ignore nan değilse alis yapılacak
+        if start_ignore=="ok":
+            print("bos geciliyor alim yapilmadi", start_ignore)
+            continue
+        if buy_price > currentPrice:
+            bankMoney -= buy_price * buy_quantity
+            if bankMoney < 0:
+                print("Banka Hesabınızda Yeterli Bakiye Yok")
+                break
+            totalBuyQuantity += buy_quantity
+            print("currentPrice", currentPrice)
+            print("buy_price", buy_price)
+            print("totalBuyQuantity", totalBuyQuantity)
+            # bu sadece veriye eklenmesi icin yapılır bir emir gondermez telegrama mesaj iletilir
+            trader.sell(symbol, buy_price, sell_quantity, MARKET, test=True)
+    print("Toplu alım bitti totalBuyQuantity", totalBuyQuantity)
+    ## şimdi adetler belirlendi anlık fiyat üzerinden market emir ile total adet üzerinden alım yapılacak
+    trader.buy(symbol, currentPrice, totalBuyQuantity, MARKET)
+    #simdi emirlerin gerçeklesmesini bekleyeceğiz buraya bir while atıp burada alim adeti ile hesabımızdaki adet esit oluncaya kadar bekleyeceğiz.
+    while 1:
+        coinBalance = trader.get_coin_balance(symbol)
+        if coinBalance >= totalBuyQuantity:
+            print("Alım işlemi tamamlandı")
+            break
+        time.sleep(10)
+    # şimdi satış emirlerinin verilmesi gerekmekte
+   
+    totalBuyQuantity = 0
+    for i in range(closest_indices[0], 0, -1):
+        buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
+        buy_quantity = readExcelData.get_cell_data(i, "Alis Adet")
+        sell_quantity = readExcelData.get_cell_data(i, "Satis Adet")
+        start_ignore = readExcelData.get_cell_data(i, "BaslangicYoksay")
+
+        
+        # start ignore nan değilse alis yapılacak
+        if start_ignore=="ok":
+            print("bos geciliyor alim yapilmadi", start_ignore)
+            continue
+        if buy_price > currentPrice:
+            binanceMoney -= buy_price * buy_quantity
+            if binanceMoney < 0:
+                print("Banka Hesabınızda Yeterli Bakiye Yok")
+                break
+            totalBuyQuantity += buy_quantity
+            print("currentPrice", currentPrice)
+            print("buy_price", buy_price)
+            print("totalBuyQuantity", totalBuyQuantity)
+            # bu sefer gercek satis emirleri verilecek
+            trader.sell(symbol, buy_price, sell_quantity, LIMIT)
+    
+
+
+        
