@@ -72,7 +72,7 @@ def run_bot():
             symbol = sheet_name  # Ensure symbol is a string
             print("symbol", symbol)
             if BULK_PURCHASE_FLAG:
-                bulkPurchase(symbol, readExcelData, trader)
+                bulkPurchase(symbol, readExcelData, trader,data)
                 BULK_PURCHASE_FLAG = False
             """ for i in range(0, data.shape[0]):
                 buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
@@ -100,11 +100,11 @@ alış fiyatının üstündeki değerlerde elimizdeki total para kadar alım yap
 ama burada baslangic yoksay değeri varsa o değer kadar alım yapılmayacak üstündeki değerlerde alım yapılacak
 yapılan alımlar kaydedilecek ve sonrasında biraz beklenip alt kısımlarda elimizdeki adeti sağlayacak kadar alış yapılacak
 """
-def bulkPurchase(symbol, readExcelData, trader):
+def bulkPurchase(symbol, readExcelData, trader,data):
     currentPrice = getCurrentPrice(symbol)
     binanceMoney=100000
     bankMoney = 100000
-    binanceMoney = trader.get_usdt_balance()
+    binanceMoney = trader.get_usdt_balance()/2
     bankMoney=binanceMoney
     if bankMoney is None:
         telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
@@ -173,7 +173,34 @@ def bulkPurchase(symbol, readExcelData, trader):
             print("totalBuyQuantity", totalBuyQuantity)
             # bu sefer gercek satis emirleri verilecek
             trader.sell(symbol, buy_price, sell_quantity, LIMIT)
-    
+    # satis emirleri verildi simdi alis emirleri verilecek
 
+    telegram_sender.send_message("Satis emirleri verildi simdi alis emirleri verilecek!")
 
+    totalBuyQuantity = 0
+    binanceMoney = trader.get_usdt_balance()/2
+    bankMoney=binanceMoney
+    for i in range(closest_indices[0], data.shape[0]):
+        buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
+        buy_quantity = readExcelData.get_cell_data(i, "Alis Adet")
+        sell_quantity = readExcelData.get_cell_data(i, "Satis Adet")
+        start_ignore = readExcelData.get_cell_data(i, "BaslangicYoksay")
+
+        
+        # start ignore nan değilse alis yapılacak
+        if start_ignore=="ok":
+            print("bos geciliyor alim yapilmadi", start_ignore)
+            continue
+        if currentPrice > buy_price:
+            bankMoney -= buy_price * buy_quantity
+            if bankMoney < 0:
+                telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok")
+                print("Banka Hesabınızda Yeterli Bakiye Yok")
+                break
+            totalBuyQuantity += buy_quantity
+            print("currentPrice", currentPrice)
+            print("buy_price", buy_price)
+            print("totalBuyQuantity", totalBuyQuantity)
+
+    telegram_sender.send_message("Toplu alım bitti ")
         
