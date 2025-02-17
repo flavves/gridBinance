@@ -74,18 +74,7 @@ def run_bot():
             if BULK_PURCHASE_FLAG:
                 bulkPurchase(symbol, readExcelData, trader,data)
                 BULK_PURCHASE_FLAG = False
-            """ for i in range(0, data.shape[0]):
-                buy_price = readExcelData.get_cell_data(i, "Fiyatlar")
-                buy_quantity = readExcelData.get_cell_data(i, "Alis Adet")
-                sell_quantity = readExcelData.get_cell_data(i, "Satis Adet")
-                start_ignore = readExcelData.get_cell_data(i, "BaslangicYoksay")
-                print("-_-_-_-_-_")
-                print("start_ignore", start_ignore)
-                print("buy_price", buy_price)
-                print("buy_quantity", buy_quantity)
-                print("sell_quantity", sell_quantity)
-                print("-_-_-_-_-_")"""
-            
+
 
 def getCurrentPrice(coin_name):
     with open(DB_OUTPUT_FILE_PATH, 'r') as file:
