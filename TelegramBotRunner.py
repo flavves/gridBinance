@@ -37,9 +37,8 @@ class TelegramBotRunner:
 
     def start(self):
         self.app.run_polling()
-"""
+
 if __name__ == "__main__":
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     bot_runner = TelegramBotRunner(TELEGRAM_BOT_TOKEN)
     bot_runner.start()
-"""
