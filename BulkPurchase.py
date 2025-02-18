@@ -21,15 +21,17 @@ class BulkPurchase:
 
 
     def execute_bulk_purchase(self):
+        print("Toplu alım başladı")
+        print("Binance hesabında bulunan para", self.binanceMoney)
+        
         if self.binanceMoney is None:
             self.telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
             print("Banka Hesabınızda Yeterli Bakiye Yok Error")
             return
-
+        print("toplu alım için anlık fiyata en yakın fiyatlar alınıyor")
         closest_indices = self.readExcelData.get_value_index("Fiyatlar", self.currentPrice)
-        print("closest_indices", closest_indices)
         totalBuyQuantity = 0
-
+        print("toplu alım için en yakın fiyatlar alındı kaç adet alınacağı hesaplanıyor")
         for i in range(closest_indices[0], 0, -1):
             buy_price = self.readExcelData.get_cell_data(i, "Fiyatlar")
             buy_quantity = self.readExcelData.get_cell_data(i, "Alis Adet")
@@ -37,10 +39,12 @@ class BulkPurchase:
             start_ignore = self.readExcelData.get_cell_data(i, "BaslangicYoksay")
             if(self.bankMoney==-1):
                 bankMoney= self.readExcelData.get_cell_data(0, "BUTCE")
+                print("Bütçe olarak kullanılacak para", self.bankMoney)
                 bankMoney=bankMoney/2
+                
 
             if start_ignore == "ok":
-                print("bos geciliyor alim yapilmadi", start_ignore)
+                print("bos geciliyor alim yapilmadi", buy_price)
                 continue
             if buy_price > self.currentPrice:
                 self.bankMoney -= buy_price * buy_quantity
@@ -49,16 +53,21 @@ class BulkPurchase:
                     print("Banka Hesabınızdaki para toplu alim icin bitmistir")
                     break
                 totalBuyQuantity += buy_quantity
+                print("--------------------------")
                 print("currentPrice", self.currentPrice)
                 print("buy_price", buy_price)
                 print("totalBuyQuantity", totalBuyQuantity)
+                print("bankMoney", self.bankMoney)
+                print("--------------------------")
 
         print("Toplu alım bitti totalBuyQuantity", totalBuyQuantity)
         self.telegram_sender.send_message(f"Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
         self.trader.buy(self.symbol, self.currentPrice, totalBuyQuantity, "MARKET")
-
+        print("Market emri --> ",totalBuyQuantity, "adet için alım emri verildi")
         while True:
+            
             coinBalance = self.trader.get_coin_balance(self.symbol)
+            print("hesapta alınan coin miktarı kontrol ediliyor --> ",coinBalance,"/",totalBuyQuantity)
             if coinBalance >= totalBuyQuantity:
                 print("Alım işlemi tamamlandı")
                 self.telegram_sender.send_message("Toplu alım emirleri gerçekleşti satış ve alım emirleri verilecek.")
@@ -66,6 +75,7 @@ class BulkPurchase:
             time.sleep(10)
 
         #sell orders
+        print("satış emri veriliyor")
         totalBuyQuantity = 0
         for i in range(closest_indices[0], 0, -1):
             buy_price = self.readExcelData.get_cell_data(i, "Fiyatlar")
@@ -86,13 +96,15 @@ class BulkPurchase:
                     print("Banka Hesabındaki para toplu satış emirleri için bitmiştir")
                     break
                 totalBuyQuantity += buy_quantity
+                print("--------------------------")
                 print("currentPrice", self.currentPrice)
                 print("buy_price", buy_price)
                 print("totalBuyQuantity", totalBuyQuantity)
+                print("--------------------------")
                 self.trader.sell(self.symbol, buy_price, sell_quantity, "LIMIT")
 
         self.telegram_sender.send_message("Satis emirleri verildi simdi alis emirleri verilecek!")
-
+        print("alış emri veriliyor.")
         totalBuyQuantity = 0
         self.binanceMoney = self.trader.get_usdt_balance() / 2
         self.bankMoney = self.binanceMoney

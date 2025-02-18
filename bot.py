@@ -68,10 +68,10 @@ def run_bot():
             print(data.head())
         sheet_names = readExcelData.get_sheet_names()
         
-
+        print("excel verileri kontrol ediliyor.")
         for sheet_name in sheet_names:
             symbol = sheet_name  # Ensure symbol is a string
-            print("symbol", symbol)
+            print("symbol -->", symbol)
             if BULK_PURCHASE_FLAG:
                 
                 bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender,data)
