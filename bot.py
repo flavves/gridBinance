@@ -39,6 +39,7 @@ def run_bot():
     DB_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'trades.json')
     DB_OUTPUT_FILE_PATH=os.path.join(home_dir, 'python', 'gridBinance', 'current_prices.json')
     EXCELL_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'files', 'grid.xlsx')
+    STATE_FILE = os.path.join(home_dir, 'python', 'gridBinance', 'botStates.json')
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
@@ -63,8 +64,21 @@ def run_bot():
             if symbolPrice is None or symbolPrice == -1:
                 telegram_sender.send_message(f"An error occurred while retrieving the price for {symbol}.")
                 logging.error(f"An error occurred while retrieving the price for {symbol}.")
-                continue         
-            if BULK_PURCHASE_FLAG:
-                bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender, data)
-                bulkPurchase.execute_bulk_purchase()
-                BULK_PURCHASE_FLAG = False
+                continue
+
+            # Check the state of the coin
+            with open(STATE_FILE, "r") as f:
+                state = json.load(f)
+            
+            if symbol in state:
+                if state[symbol] == "started":
+                    bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender, data)
+                    bulkPurchase.execute_bulk_purchase()
+                    state[symbol] = "completed"
+                    with open(STATE_FILE, "w") as f:
+                        json.dump(state, f)
+                    logging.info(f"Bulk purchase executed for {symbol}.")
+                elif state[symbol] == "completed":
+                    logging.info(f"Bulk purchase not allowed for {symbol} as it is already completed.")
+            else:
+                logging.info(f"{symbol} is not in the state file.")

@@ -4,13 +4,51 @@ import pandas as pd
 import os
 import asyncio
 from dotenv import load_dotenv
+import json
+
 load_dotenv()
+
 class TelegramBotRunner:
     def __init__(self, token):
         self.token = token
         self.app = Application.builder().token(self.token).build()
         self.app.add_handler(MessageHandler(filters.Document.ALL, self.handle_document))
         self.app.add_handler(CommandHandler("chatid", self.handle_chatid))
+        self.app.add_handler(CommandHandler("start", self.handle_start))
+        self.app.add_handler(CommandHandler("stop", self.handle_stop))
+        home_dir = os.path.expanduser('~')
+        STATE_FILE = os.path.join(home_dir, 'python', 'gridBinance', 'botStates.json')
+        self.state_file = STATE_FILE
+        self.load_state()
+
+    def load_state(self):
+        if os.path.exists(self.state_file):
+            with open(self.state_file, "r") as f:
+                self.state = json.load(f)
+        else:
+            self.state = {}
+
+    def save_state(self):
+        with open(self.state_file, "w") as f:
+            json.dump(self.state, f)
+
+    async def handle_start(self, update: Update, context) -> None:
+        pair = context.args[0] if context.args else None
+        if pair:
+            self.state[pair] = "started"
+            self.save_state()
+            await update.message.reply_text(f"{pair} için bot başlatıldı.")
+        else:
+            await update.message.reply_text("Lütfen bir çift belirtin. Örnek: /start BTCUSDT")
+
+    async def handle_stop(self, update: Update, context) -> None:
+        pair = context.args[0] if context.args else None
+        if pair and pair in self.state:
+            del self.state[pair]
+            self.save_state()
+            await update.message.reply_text(f"{pair} için bot durduruldu ve kayıt silindi.")
+        else:
+            await update.message.reply_text("Lütfen geçerli bir çift belirtin. Örnek: /stop BTCUSDT")
 
     async def handle_document(self, update: Update, context) -> None:
         file = update.message.document
