@@ -75,13 +75,13 @@ class BinanceTrader:
                 self.db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
 
             # Send a message to Telegram
-            message = f"Binance Trader => Order placed: {trade_type.upper()} {quantity} {symbol} at {price if price else 'market price'}"
+            message = f"⌛️⌛️ Binance Trader => Emir verildi: {trade_type.upper()} {quantity} {symbol} Fiyat {price if price else 'market price'}"
             self.telegram_sender.send_message(message)
             logging.info(message)
 
             return order
         except Exception as e:
-            error_message = f"Binance Trader => An error occurred: {e}"
+            error_message = f"Binance Trader => Alım satım kısmında hata olustu 🧨🧨🧨 {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
@@ -120,7 +120,7 @@ class BinanceTrader:
             balance = self.client.get_asset_balance(asset='USDT')
             return float(balance['free'])
         except Exception as e:
-            error_message = f"An error occurred while retrieving USDT balance: {e}"
+            error_message = f"Hesaptaki usdt miktarı alınıken hata olustu 🧨: {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return -1
@@ -136,7 +136,7 @@ class BinanceTrader:
             balance = self.client.get_asset_balance(asset=symbol)
             return float(balance['free'])
         except Exception as e:
-            error_message = f"An error occurred while retrieving {symbol} balance: {e}"
+            error_message = f"Hesapta kaç adet olduğu sorgulanırken hata olustu {symbol} 🧨🧨: {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
@@ -152,7 +152,7 @@ class BinanceTrader:
             ticker = self.client.get_symbol_ticker(symbol=symbol)
             return float(ticker['price'])
         except Exception as e:
-            error_message = f"An error occurred while retrieving the price for {symbol}: {e}"
+            error_message = f"🧨🧨 Fiyat çekilirken hata oluştu {symbol}: {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
@@ -169,7 +169,7 @@ class BinanceTrader:
             order = self.client.get_order(symbol=symbol, orderId=order_id)
             return order['status']
         except Exception as e:
-            error_message = f"An error occurred while checking order status: {e}"
+            error_message = f"🧨 Emir sorgulanırken hata oluştu : {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None

@@ -61,7 +61,7 @@ def run_bot():
             logging.info(f"Symbol: {symbol}")
             symbolPrice = trader.get_current_price(symbol)
             if symbolPrice is None or symbolPrice == -1:
-                telegram_sender.send_message(f"An error occurred while retrieving the price for {symbol}.")
+                telegram_sender.send_message(f"🧨 Fiyat alınırken hata oluştu {symbol}.")
                 logging.error(f"An error occurred while retrieving the price for {symbol}.")
                 continue
 
@@ -98,11 +98,11 @@ def run_bot():
                         logging.info(f"Buy Orders for {symbol}: {buy_orders}")
                         logging.info(f"Sell Orders for {symbol}: {sell_orders}")
                         # symbolPrice eğer buy_orders içindeki bir değerden küçükse emir gerçekleşmiştir. o emri siliyoruz
-                        for i in range(len(buy_orders)):
+                        """for i in range(len(buy_orders)):
                             if symbolPrice < buy_orders[i]["price"]:
                                 del buy_orders[i]
                                 break
-                        
+                        """
 
 
             else:

@@ -33,11 +33,11 @@ class BulkPurchase:
         logging.info(f"Binance hesabında bulunan para: {self.binanceMoney}")
         
         if self.binanceMoney is None or self.binanceMoney == -1:
-            self.telegram_sender.send_message("Banka Hesabınızda Yeterli Bakiye Yok Error")
+            self.telegram_sender.send_message("🧨 Banka Hesabınızda Yeterli Bakiye Yok Error")
             logging.error("Banka Hesabınızda Yeterli Bakiye Yok Error")
             return
         if self.currentPrice is None or self.currentPrice == -1:
-            self.telegram_sender.send_message("Anlık fiyat alınamadı")
+            self.telegram_sender.send_message("🧨 Anlık fiyat alınamadı")
             logging.error("Anlık fiyat alınamadı Durduruluyor")
             return
         logging.info("Toplu alım için anlık fiyata en yakın fiyatlar alınıyor")
@@ -54,7 +54,7 @@ class BulkPurchase:
                 logging.info(f"Bütçe olarak kullanılacak para: {self.bankMoney}")
                 self.bankMoney=self.bankMoney/2
             if self.bankMoney < 0:
-                self.telegram_sender.send_message("butce excell üzerinden alınmadı")
+                self.telegram_sender.send_message("🧨 butce excell üzerinden alınmadı")
                 logging.error("Bütçe Excel üzerinden alınmadı")
                 break
             
@@ -67,19 +67,19 @@ class BulkPurchase:
                 logging.info("Toplu alım için uygun fiyat bulundu")
                 self.bankMoney -= buy_price * buy_quantity
                 if self.bankMoney < 0:
-                    self.telegram_sender.send_message("Banka Hesabınızdaki para toplu alim icin bitmistir")
+                    self.telegram_sender.send_message("🛎 Banka Hesabınızdaki para toplu alim icin bitmistir")
                     logging.error("Banka Hesabınızdaki para toplu alım için bitmiştir")
                     break
                 totalBuyQuantity += buy_quantity
                 logging.info(f"Current price: {self.currentPrice}, Buy price: {buy_price}, Total buy quantity: {totalBuyQuantity}, Bank money: {self.bankMoney}")
         if totalBuyQuantity == 0:
-            self.telegram_sender.send_message("Toplu alım için uygun fiyat bulunamadı")
+            self.telegram_sender.send_message("🧨 Toplu alım için uygun fiyat bulunamadı")
             logging.info("Toplu alım için uygun fiyat bulunamadı")
             return
         
         logging.info(f"Toplu alım bitti, total buy quantity: {totalBuyQuantity}")
 
-        self.telegram_sender.send_message(f"Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
+        self.telegram_sender.send_message(f"🛎 Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
         order=self.trader.buy(self.symbol,"MARKET",totalBuyQuantity, self.currentPrice,isBulk=True)
 
         logging.info(f"Market emri: {totalBuyQuantity} adet için alım emri verildi")
@@ -91,7 +91,7 @@ class BulkPurchase:
             try:
                 if coinBalance >= totalBuyQuantity:
                     logging.info("Alım işlemi tamamlandı")
-                    self.telegram_sender.send_message("Toplu alım emirleri gerçekleşti satış ve alım emirleri verilecek.")
+                    self.telegram_sender.send_message("🛎 Toplu alım emirleri gerçekleşti satış ve alım emirleri verilecek. 🎊 ")
                     break
             except:
                 logging.info("Alım daha tamamlanmadı")
@@ -116,7 +116,7 @@ class BulkPurchase:
             if buy_price > self.currentPrice:
                 self.bankMoney -= buy_price * buy_quantity
                 if self.bankMoney < 0:
-                    self.telegram_sender.send_message("Banka Hesabındaki para toplu satış emirleri için bitmiştir")
+                    self.telegram_sender.send_message("🛎 Banka Hesabındaki para toplu satış emirleri için bitmiştir")
                     logging.error("Banka Hesabındaki para toplu satış emirleri için bitmiştir")
                     break
                 totalBuyQuantity += buy_quantity
@@ -142,10 +142,10 @@ class BulkPurchase:
             if self.currentPrice > buy_price:
                 self.bankMoney -= buy_price * buy_quantity
                 if self.bankMoney < 0:
-                    self.telegram_sender.send_message("Banka Hesabındaki para toplu alım emirleri için bitmiştir")
+                    self.telegram_sender.send_message("🛎 Banka Hesabındaki para toplu alım emirleri için bitmiştir")
                     logging.error("Banka Hesabındaki para toplu alım emirleri için bitmiştir")
                     break
                 totalBuyQuantity += buy_quantity
                 logging.info(f"Current price: {self.currentPrice}, Buy price: {buy_price}, Total buy quantity: {totalBuyQuantity}")
                 self.trader.buy(self.symbol,"LIMIT",buy_quantity, buy_price)
-        self.telegram_sender.send_message("Toplu alım bitti Grid bot başlamıştır başarılar :)")
+        self.telegram_sender.send_message("🛎 Toplu alım bitti Grid bot başlamıştır başarılar 💸💸💸🎊🎊🎊")

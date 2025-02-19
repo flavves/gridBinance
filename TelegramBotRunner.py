@@ -37,18 +37,18 @@ class TelegramBotRunner:
         if pair:
             self.state[pair] = "started"
             self.save_state()
-            await update.message.reply_text(f"{pair} için bot başlatıldı.")
+            await update.message.reply_text(f"{pair} için bot başlatıldı. 🎉")
         else:
-            await update.message.reply_text("Lütfen bir çift belirtin. Örnek: /start BTCUSDT")
+            await update.message.reply_text("📍 Lütfen bir çift belirtin. Örnek: /start BTCUSDT")
 
     async def handle_stop(self, update: Update, context) -> None:
         pair = context.args[0] if context.args else None
         if pair and pair in self.state:
             del self.state[pair]
             self.save_state()
-            await update.message.reply_text(f"{pair} için bot durduruldu ve kayıt silindi.")
+            await update.message.reply_text(f"{pair} için bot durduruldu ve kayıt silindi.🧼")
         else:
-            await update.message.reply_text("Lütfen geçerli bir çift belirtin. Örnek: /stop BTCUSDT")
+            await update.message.reply_text("📍 Lütfen geçerli bir çift belirtin. Örnek: /stop BTCUSDT")
 
     async def handle_document(self, update: Update, context) -> None:
         file = update.message.document
@@ -62,16 +62,16 @@ class TelegramBotRunner:
             df = pd.read_excel(file_path)
 
             # İlk 5 satırı gönder
-            await update.message.reply_text(f"İlk 5 satır:\n{df.head().to_string()}")
+            await update.message.reply_text(f"🗒 İlk 5 satır:\n{df.head().to_string()}")
 
             # Dosyayı sil
             os.remove(file_path)
         else:
-            await update.message.reply_text("Lütfen sadece Excel dosyası gönderin!")
+            await update.message.reply_text("📍 Lütfen sadece Excel dosyası gönderin!")
 
     async def handle_chatid(self, update: Update, context) -> None:
         chat_id = update.message.chat_id
-        await update.message.reply_text(f"Chat ID: {chat_id}")
+        await update.message.reply_text(f"📪 Chat ID: {chat_id}")
 
     def start(self):
         self.app.run_polling()
