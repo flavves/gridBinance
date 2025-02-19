@@ -1,11 +1,12 @@
 import pandas as pd
 import openpyxl
 import os
-
+import json
 class ReadExcelData:
     def __init__(self, file_path):
         self.file_path = file_path
         self.data = None
+        self.sheetNames=None
 
     def read_data(self):
         try:
@@ -20,11 +21,20 @@ class ReadExcelData:
         else:
             print("No data available. Please read the data first.")
             return None
-    
+        
+    def save_sheet_Names_To_Json(self):
+        try:
+            with open('sheetNames.json', 'w') as f:
+                f.write(json.dumps(self.sheetNames))
+        except Exception as e:
+            print(f"An error occurred")
+            
     def get_sheet_names(self):
         try:
             wb = openpyxl.load_workbook(self.file_path)
             sheet_names = wb.sheetnames
+            self.sheetNames=sheet_names
+            self.save_sheet_Names_To_Json()
             return sheet_names
         except Exception as e:
             print(f"An error occurred: {e}")

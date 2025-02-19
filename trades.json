@@ -1,109 +1,31 @@
 {
-    "SOLUSDT": {
-        "buyOrders": [
-            {
-                "price": 192,
-                "qty": 10
-            },
-            {
-                "price": 191,
-                "qty": 10
-            }
-        ],
-        "sellOrders": [
-            {
-                "price": 194,
-                "qty": 9
-            },
-            {
-                "price": 195,
-                "qty": 9
-            }
-        ]
-    },
-    "ETHUSDT": {
-        "buyOrders": [
-            {
-                "price": 3000,
-                "qty": 10
-            }
-        ],
-        "sellOrders": [
-            {
-                "price": 3010,
-                "qty": 10
-            }
-        ]
-    },
-    "BNBUSDT": {
-        "buyOrders": [
-            {
-                "price": 680,
-                "qty": 10
-            },
-            {
-                "price": 690,
-                "qty": 10
-            }
-        ],
-        "sellOrders": [
-            {
-                "price": 700,
-                "qty": 9
-            },
-            {
-                "price": 720,
-                "qty": 9
-            }
-        ]
-    },
     "DOGEUSDT": {
         "buyOrders": [
             {
-                "price": 0.22,
-                "qty": 10
-            }
-        ],
-        "sellOrders": [
-            {
-                "price": 0.26,
-                "qty": 10
-            }
-        ]
-    },
-    "ADAUSDT": {
-        "buyOrders": [
-            {
-                "price": 0.7,
-                "qty": 10
+                "price": "0.254",
+                "qty": "144"
             },
             {
-                "price": 0.71,
-                "qty": 10
-            }
-        ],
-        "sellOrders": [
-            {
-                "price": 0.79,
-                "qty": 9
+                "price": "0.23",
+                "qty": "72"
             },
             {
-                "price": 0.8,
-                "qty": 9
-            }
-        ]
-    },
-    "CAKEUSDT": {
-        "buyOrders": [
+                "price": "0.22",
+                "qty": "72"
+            },
             {
-                "price": 2.22,
-                "qty": 10
+                "price": "0.21",
+                "qty": "72"
             }
         ],
         "sellOrders": [
             {
-                "price": 2.96,
-                "qty": 10
+                "price": "0.27",
+                "qty": "70"
+            },
+            {
+                "price": "0.28",
+                "qty": "70"
             }
         ]
     }
