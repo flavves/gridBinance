@@ -2,13 +2,15 @@ from binance.client import Client
 from binance.enums import *
 import DBManager
 import TelegramMessageSender
+import logging  # Added logging import
+
 class BinanceTrader:
     def __init__(self, api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id):
         self.client = Client(api_key, api_secret)
         self.db_manager = DBManager.DBManager(db_file_path)
         self.telegram_sender = TelegramMessageSender.TelegramMessageSender(telegram_bot_token, telegram_chat_id)
 
-    def place_order(self, symbol, side, order_type, quantity, price=None, test=False,isBulk=False):
+    def place_order(self, symbol, side, order_type, quantity, price=None, test=False, isBulk=False):
         """
         Place an order on Binance.
 
@@ -21,7 +23,7 @@ class BinanceTrader:
         """
         
         try:
-            if test==False:
+            if test == False:
                 if order_type == 'LIMIT':
                     if price is None:
                         raise ValueError("Price must be specified for limit orders")
@@ -43,7 +45,7 @@ class BinanceTrader:
                 else:
                     raise ValueError("Invalid order type")
             else:
-                print("test order")
+                logging.info("Test order")
                 if order_type == 'LIMIT':
                     if price is None:
                         raise ValueError("Price must be specified for limit orders")
@@ -56,35 +58,35 @@ class BinanceTrader:
                         price=price
                     )
                 elif order_type == 'MARKET':
-                    print("test order MARKET" )
+                    logging.info("Test order MARKET")
                     order = self.client.create_test_order(
                         symbol=symbol,
                         side=side,
                         type=ORDER_TYPE_MARKET,
                         quantity=quantity
                     )
-                    print("test order MARKET",order )
+                    logging.info(f"Test order MARKET: {order}")
                 else:
                     raise ValueError("Invalid order type")
 
-            
             trade_type = 'buy' if side == SIDE_BUY else 'sell'
-            #eger toplu alim degilse db ye ekle toplu alimlar db ye eklenmez
-            if isBulk==False:
+            # Eger toplu alim degilse db ye ekle toplu alimlar db ye eklenmez
+            if isBulk == False:
                 self.db_manager.add_trade(symbol, trade_type, str(price), str(quantity))
 
-            #   Send a message to Telegram
+            # Send a message to Telegram
             message = f"Binance Trader => Order placed: {trade_type.upper()} {quantity} {symbol} at {price if price else 'market price'}"
             self.telegram_sender.send_message(message)
+            logging.info(message)
 
             return order
         except Exception as e:
-            error_message = f"Binance Trader =>  An error occurred: {e}"
-            print(error_message)
+            error_message = f"Binance Trader => An error occurred: {e}"
+            logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
 
-    def buy(self, symbol, order_type, quantity, price=None, test=False,isBulk=False):
+    def buy(self, symbol, order_type, quantity, price=None, test=False, isBulk=False):
         """
         Place a buy order on Binance.
 
@@ -94,7 +96,7 @@ class BinanceTrader:
         :param price: Price for limit orders
         :return: Order response
         """
-        return self.place_order(symbol, SIDE_BUY, order_type, quantity, price, test,isBulk)
+        return self.place_order(symbol, SIDE_BUY, order_type, quantity, price, test, isBulk)
 
     def sell(self, symbol, order_type, quantity, price=None, test=False):
         """
@@ -119,9 +121,9 @@ class BinanceTrader:
             return float(balance['free'])
         except Exception as e:
             error_message = f"An error occurred while retrieving USDT balance: {e}"
-            print(error_message)
+            logging.error(error_message)
             self.telegram_sender.send_message(error_message)
-            return 100000
+            return -1
 
     def get_coin_balance(self, symbol):
         """
@@ -135,7 +137,7 @@ class BinanceTrader:
             return float(balance['free'])
         except Exception as e:
             error_message = f"An error occurred while retrieving {symbol} balance: {e}"
-            print(error_message)
+            logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
 
@@ -151,18 +153,18 @@ class BinanceTrader:
             return float(ticker['price'])
         except Exception as e:
             error_message = f"An error occurred while retrieving the price for {symbol}: {e}"
-            print(error_message)
+            logging.error(error_message)
             self.telegram_sender.send_message(error_message)
             return None
 
 
 """ 
 if __name__ == "__main__":
-            api_key = 'v3AUoEIuJ5qcKObSeFSaSEWxJFvjXDF6r6fdd080fBDyK4DTTMX9Q4Q9UV0Z6tNE'
-            api_secret = 'dRqQDihR5HxHxVp5E8ukPZJYLtxAfvbES4ofe9juU4tcO8KwYnXYCHO05ivnGIgY'
-            db_file_path = '/home/batuhanokmen/python/gridBinance/trades.json'
-            telegram_bot_token = '8031042832:AAFZWNph75IIZOXVHBGbhmDr5EUHhx5b-pQ'
-            telegram_chat_id = '762580886'
+            api_key = 'api_key'
+            api_secret = 'api_key'
+            db_file_path = 'db_file_path'
+            telegram_bot_token = 'bottoken'
+            telegram_chat_id = 'telegram_chat_id'
 
             trader = BinanceTrader(api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id)
 
