@@ -11,7 +11,6 @@ class ReadExcelData:
     def read_data(self):
         try:
             self.data = pd.read_excel(self.file_path)
-            print("Data read successfully.")
         except Exception as e:
             print(f"An error occurred: {e}")
 

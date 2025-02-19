@@ -2,10 +2,6 @@
     "DOGEUSDT": {
         "buyOrders": [
             {
-                "price": "0.254",
-                "qty": "144"
-            },
-            {
                 "price": "0.23",
                 "qty": "72"
             },
@@ -16,6 +12,11 @@
             {
                 "price": "0.21",
                 "qty": "72"
+            },
+            {
+                "price": "0.2",
+                "qty": "100",
+                "orderId": 9025075837
             }
         ],
         "sellOrders": [

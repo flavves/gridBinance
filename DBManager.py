@@ -17,7 +17,7 @@ class DBManager:
             json.dump(self.data, file, indent=4)
             return True
 
-    def add_trade(self, coin, trade_type, price, qty):
+    def add_trade(self, coin, trade_type, price, qty, order_id):
         if coin not in self.data:
             self.data[coin] = {'buyOrders': [], 'sellOrders': []}
         if trade_type == 'buy':
@@ -25,14 +25,16 @@ class DBManager:
                 return f"Error: Trade with price {price} already exists in buy orders."
             self.data[coin]['buyOrders'].append({
                 'price': price,
-                'qty': qty
+                'qty': qty,
+                'orderId': order_id
             })
         elif trade_type == 'sell':
             if any(trade['price'] == price for trade in self.data[coin]['sellOrders']):
                 return f"Error: Trade with price {price} already exists in sell orders."
             self.data[coin]['sellOrders'].append({
                 'price': price,
-                'qty': qty
+                'qty': qty,
+                'orderId': order_id
             })
         self.save_data()
         return f"Trade added successfully: {trade_type} {qty} {coin} at {price}"

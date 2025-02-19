@@ -80,7 +80,7 @@ class BulkPurchase:
         logging.info(f"Toplu alım bitti, total buy quantity: {totalBuyQuantity}")
 
         self.telegram_sender.send_message(f"Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
-        order=self.trader.buy(self.symbol,"MARKET",totalBuyQuantity, self.currentPrice)
+        order=self.trader.buy(self.symbol,"MARKET",totalBuyQuantity, self.currentPrice,isBulk=True)
 
         logging.info(f"Market emri: {totalBuyQuantity} adet için alım emri verildi")
         logging.info(f"Emir detayları: {order}")

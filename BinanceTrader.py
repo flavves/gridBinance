@@ -72,7 +72,7 @@ class BinanceTrader:
             trade_type = 'buy' if side == SIDE_BUY else 'sell'
             # Eger toplu alim degilse db ye ekle toplu alimlar db ye eklenmez
             if isBulk == False:
-                self.db_manager.add_trade(symbol, trade_type, str(price), str(quantity))
+                self.db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
 
             # Send a message to Telegram
             message = f"Binance Trader => Order placed: {trade_type.upper()} {quantity} {symbol} at {price if price else 'market price'}"
@@ -157,30 +157,58 @@ class BinanceTrader:
             self.telegram_sender.send_message(error_message)
             return None
 
+    def check_order_status(self, symbol, order_id):
+        """
+        Check the status of an order on Binance.
 
-""" 
+        :param symbol: Trading pair symbol (e.g., 'BTCUSDT')
+        :param order_id: ID of the order to check
+        :return: Order status
+        """
+        try:
+            order = self.client.get_order(symbol=symbol, orderId=order_id)
+            return order['status']
+        except Exception as e:
+            error_message = f"An error occurred while checking order status: {e}"
+            logging.error(error_message)
+            self.telegram_sender.send_message(error_message)
+            return None
+
+"""
+from dotenv import load_dotenv
+import os
+load_dotenv()
 if __name__ == "__main__":
-            api_key = 'api_key'
-            api_secret = 'api_key'
-            db_file_path = 'db_file_path'
-            telegram_bot_token = 'bottoken'
-            telegram_chat_id = 'telegram_chat_id'
+    API_KEY = os.getenv('BINANCE_API_KEY')
+    API_SECRET = os.getenv('BINANCE_API_SECRET')
+    home_dir = os.path.expanduser('~')
+    DB_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'trades.json')
+    DB_OUTPUT_FILE_PATH=os.path.join(home_dir, 'python', 'gridBinance', 'current_prices.json')
+    EXCELL_FILE_PATH = os.path.join(home_dir, 'python', 'gridBinance', 'files', 'grid.xlsx')
+    STATE_FILE = os.path.join(home_dir, 'python', 'gridBinance', 'botStates.json')
+    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-            trader = BinanceTrader(api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id)
+    trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
 
-            # Example usage
-            usdt_balance = trader.get_usdt_balance()
-            print(f"USDT Balance: {usdt_balance}")
+    # Example usage
+    usdt_balance = trader.get_usdt_balance()
+    print(f"USDT Balance: {usdt_balance}")
 
-            btc_balance = trader.get_coin_balance('DOGE')
-            print(f"BTC Balance: {btc_balance}")
+    #get order status
+    symbol = 'DOGEUSDT'
+    order_id = 9025075837
+    order_status = trader.check_order_status(symbol, order_id)
+    print(f"Order status: {order_status}")
 
-            # Place a test buy order
-            test_order = trader.buy('BTCUSDT', 'MARKET', 0.001, test=True)
-            print(f"Test Buy Order: {test_order}")
-
-            # Place a real sell order
-            sell_order = trader.sell('BTCUSDT', 'LIMIT', 0.001, price='50000',test=True)
-            print(f"Sell Order: {sell_order}")
-
+    #PLACE A ORDER
+    symbol = 'DOGEUSDT'
+    side = 'BUY'
+    order_type = 'LIMIT'
+    quantity = 100
+    price = 0.2
+    test = False
+    isBulk = False
+    order = trader.place_order(symbol, side, order_type, quantity, price, test, isBulk)
+    print(order)
 """

@@ -52,8 +52,7 @@ def run_bot():
         time.sleep(3)
         readExcelData.read_data()
         data = readExcelData.get_data()
-        if data is not None:
-            logging.info(f"Excel data: {data.head()}")
+
         sheet_names = readExcelData.get_sheet_names()
         
         logging.info("Checking Excel data.")
@@ -80,5 +79,31 @@ def run_bot():
                     logging.info(f"Bulk purchase executed for {symbol}.")
                 elif state[symbol] == "completed":
                     logging.info(f"Bulk purchase not allowed for {symbol} as it is already completed.")
+
+                    # bota burada devam ediyoruz simdi 
+                    # herhangi bir emir gerçekleşti mi diye bakmamız gerekiyor ilgili coin için
+                    # Trades.json içine ilgili koinin emirlerine bakıyoruz. Bir emir gerçekleştiyse listeden siliyoruz
+                    # gerçekleşen emir alış ise listedeki bir alttaki değere alış giriyoruz ve grid aralık degerine bakıyoruz
+                    # grid aralık degerimizde bir satış yoksa oraya satış veriyoruz. 0.23 alışı oldu şimdi 0.26 ya satış giriyorum.
+                    # 1 grid aralık degerini  alıyorum 
+                    gridAralik=readExcelData.get_cell_data(0, "GRID ARALIK")
+                    # trades.json içine bakıyorum anlık fiyat için bir emir gerçekleşmiş mi bakıyorum.
+                    with open(DB_FILE_PATH, "r") as f:
+                        trades = json.load(f)
+                    if trades is not None:
+                        logging.info(f"Trades: {trades}")
+                    if symbol in trades:
+                        buy_orders = trades[symbol].get("buyOrders", [])
+                        sell_orders = trades[symbol].get("sellOrders", [])
+                        logging.info(f"Buy Orders for {symbol}: {buy_orders}")
+                        logging.info(f"Sell Orders for {symbol}: {sell_orders}")
+                        # symbolPrice eğer buy_orders içindeki bir değerden küçükse emir gerçekleşmiştir. o emri siliyoruz
+                        for i in range(len(buy_orders)):
+                            if symbolPrice < buy_orders[i]["price"]:
+                                del buy_orders[i]
+                                break
+                        
+
+
             else:
                 logging.info(f"{symbol} is not in the state file.")
