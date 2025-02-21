@@ -18,7 +18,7 @@ def trader():
 
     with patch("BinanceTrader.Client") as mock_client:
         mock_client_instance = mock_client.return_value
-        mock_client_instance.create_order = MagicMock(return_value={"status": "success"})
+        mock_client_instance.create_order = MagicMock(return_value={"status": "success", "orderId": 123456})
         
         trader = BinanceTrader(api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id)
         trader.client = mock_client_instance
@@ -31,16 +31,17 @@ def trader():
 
 def test_buy_order(trader):
     response = trader.buy("BTCUSDT", "LIMIT", 0.001, 50000)
+    assert response is not None
     assert response["status"] == "success"
     trader.db_manager.add_trade.assert_called_once()
     trader.telegram_sender.send_message.assert_called_once()
 
 def test_sell_order(trader):
     response = trader.sell("BTCUSDT", "LIMIT", 0.001, 50000)
+    assert response is not None
     assert response["status"] == "success"
     trader.db_manager.add_trade.assert_called_once()
     trader.telegram_sender.send_message.assert_called_once()
-
 def test_get_usdt_balance(trader):
     trader.client.get_asset_balance = MagicMock(return_value={'free': '100.0'})
     balance = trader.get_usdt_balance()
