@@ -152,7 +152,7 @@ def run_bot():
                                     continue
                                 buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                                 #eğer buy_price için daha önceden bir emir verilmediyse
-                                if buy_price not in [order["price"] for order in buy_order]:
+                                if buy_price not in [order["price"] for order in buy_orders]:
                                     
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Alis Adet")
                                     buy_order=trader.buy(symbol,"LIMIT",quantity, buy_price)
