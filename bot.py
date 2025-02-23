@@ -101,10 +101,11 @@ def run_bot():
                         for order in buy_orders:
                             print(order)
                             order_id = order["orderId"]
-                            status=trader.check_order_status(symbol, order_id)
-                            if status=="FILLED":
+                            status = trader.check_order_status(symbol, order_id)
+                            if status == "FILLED":
                                 logging.info(f"Order {order_id} is filled.")
                                 buy_orders.remove(order)
+                                trades[symbol]["buyOrders"] = buy_orders
                                 with open(DB_FILE_PATH, "w") as f:
                                     json.dump(trades, f)
                                 # gerçekleşen alış emri olduğu için satış emri verilecek
@@ -115,10 +116,12 @@ def run_bot():
                                 sell_price=buy_price+gridAralik
                                 # satış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", sell_price)
-                                buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                if closest_indices is None:
+                                    logging.error(f"Could not find a closest index for buy price {buy_price}.")
+                                    continue
+                                sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                                 #eğer buy_price için daha önceden bir emir verilmediyse
-                                if buy_price not in [order["price"] for order in sell_orders]:
-                                        
+                                if sell_price not in [order["price"] for order in sell_orders]:
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
                                     sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
                                     if sell_order is not None:
@@ -134,6 +137,7 @@ def run_bot():
                             if status=="FILLED":
                                 logging.info(f"Order {order_id} is filled.")
                                 sell_orders.remove(order)
+                                sell_orders[symbol]["sellOrders"] = sell_orders
                                 with open(DB_FILE_PATH, "w") as f:
                                     json.dump(trades, f)
                                 # gerçekleşen satış emri olduğu için alış emri verilecek
@@ -143,9 +147,13 @@ def run_bot():
                                 buy_price=sell_price-gridAralik
                                 # alış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", buy_price)
+                                if closest_indices is None:
+                                    logging.error(f"Could not find a closest index for buy price {buy_price}.")
+                                    continue
                                 buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                                 #eğer buy_price için daha önceden bir emir verilmediyse
-                                if buy_price not in [order["price"] for order in buy_orders]:
+                                if buy_price not in [order["price"] for order in buy_order]:
+                                    
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Alis Adet")
                                     buy_order=trader.buy(symbol,"LIMIT",quantity, buy_price)
                                     if buy_order is not None:
