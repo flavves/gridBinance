@@ -12,7 +12,7 @@ class BulkPurchase:
         self.telegram_sender = telegram_sender
         self.DB_OUTPUT_FILE_PATH = DB_OUTPUT_FILE_PATH
         self.currentPrice = self.getCurrentPrice(symbol)
-        self.binanceMoney = trader.get_usdt_balance() / 2
+        self.binanceMoney = trader.get_usdt_balance()
         self.bankMoney = -1
 
 
@@ -51,8 +51,11 @@ class BulkPurchase:
             start_ignore = self.readExcelData.get_cell_data(i, "BaslangicYoksay")
             if(self.bankMoney==-1):
                 self.bankMoney= self.readExcelData.get_cell_data(0, "BUTCE")
-                logging.info(f"Bütçe olarak kullanılacak para: {self.bankMoney}")
-                self.bankMoney=self.bankMoney/2
+                satisOran= self.readExcelData.get_cell_data(0, "AlisOran")
+                satisOran= 1-satisOran
+                self.bankMoney=self.bankMoney * satisOran
+                
+                logging.info(f"Satis oranı: {satisOran}, Bütçe: {self.bankMoney}")
             if self.bankMoney < 0:
                 self.telegram_sender.send_message("🧨 butce excell üzerinden alınmadı")
                 logging.error("Bütçe Excel üzerinden alınmadı")
@@ -108,7 +111,9 @@ class BulkPurchase:
             start_ignore = self.readExcelData.get_cell_data(i, "BaslangicYoksay")
             if(self.bankMoney==-1):
                 self.bankMoney= self.readExcelData.get_cell_data(0, "BUTCE")
-                self.bankMoney=self.bankMoney/2
+                satisOran= self.readExcelData.get_cell_data(0, "AlisOran")
+                satisOran= 1-satisOran
+                self.bankMoney=self.bankMoney * satisOran
 
             if start_ignore == "ok":
                 logging.info(f"Boş geçiliyor, alım yapılmadı: {start_ignore}")
@@ -134,7 +139,10 @@ class BulkPurchase:
             start_ignore = self.readExcelData.get_cell_data(i, "BaslangicYoksay")
             if(self.bankMoney==-1):
                 self.bankMoney= self.readExcelData.get_cell_data(0, "BUTCE")
-                self.bankMoney=self.bankMoney/2
+                alisOran= self.readExcelData.get_cell_data(0, "AlisOran")
+
+                self.bankMoney=self.bankMoney * alisOran
+                logging.info(f"Alış oranı: {alisOran}, Bütçe: {self.bankMoney}")
 
             if start_ignore == "ok":
                 logging.info(f"Boş geçiliyor, alım yapılmadı: {start_ignore}")
