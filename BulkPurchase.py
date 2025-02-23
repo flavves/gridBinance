@@ -52,6 +52,11 @@ class BulkPurchase:
             if(self.bankMoney==-1):
                 self.bankMoney= self.readExcelData.get_cell_data(0, "BUTCE")
                 satisOran= self.readExcelData.get_cell_data(0, "AlisOran")
+                if self.binanceMoney < self.bankMoney:
+                    self.telegram_sender.send_message("🧨 Banka Hesabınızdaki para Binance hesabınızdaki paradan fazla"
+                                                      "Binance hesabınızdaki parayı arttırın")
+                    logging.error("Banka Hesabınızdaki para Binance hesabınızdaki paradan fazla")
+                    return
                 satisOran= 1-satisOran
                 self.bankMoney=self.bankMoney * satisOran
                 
