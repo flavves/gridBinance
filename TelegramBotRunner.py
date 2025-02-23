@@ -16,8 +16,8 @@ class TelegramBotRunner:
         self.app.add_handler(CommandHandler("chatid", self.handle_chatid))
         self.app.add_handler(CommandHandler("start", self.handle_start))
         self.app.add_handler(CommandHandler("stop", self.handle_stop))
-        home_dir = os.path.expanduser('~')
-        STATE_FILE = os.path.join(home_dir, 'python', 'gridBinance', 'botStates.json')
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        STATE_FILE = os.path.join(base_dir, 'botStates.json')
         self.state_file = STATE_FILE
         self.load_state()
 
