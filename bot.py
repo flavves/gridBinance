@@ -97,13 +97,63 @@ def run_bot():
                         sell_orders = trades[symbol].get("sellOrders", [])
                         logging.info(f"Buy Orders for {symbol}: {buy_orders}")
                         logging.info(f"Sell Orders for {symbol}: {sell_orders}")
-                        # symbolPrice eğer buy_orders içindeki bir değerden küçükse emir gerçekleşmiştir. o emri siliyoruz
-                        """for i in range(len(buy_orders)):
-                            if symbolPrice < buy_orders[i]["price"]:
-                                del buy_orders[i]
-                                break
-                        """
-
-
+                        # order id değerlerine bakılcak ve gerçekleşen emirler silinecek
+                        for order in buy_orders:
+                            print(order)
+                            order_id = order["orderId"]
+                            status=trader.check_order_status(symbol, order_id)
+                            if status=="FILLED":
+                                logging.info(f"Order {order_id} is filled.")
+                                buy_orders.remove(order)
+                                with open(DB_FILE_PATH, "w") as f:
+                                    json.dump(trades, f)
+                                # gerçekleşen alış emri olduğu için satış emri verilecek
+                                # alış fiyatından grid aralık kadar yukarıda satış emri verilecek
+                                # alış fiyatı
+                                buy_price=order["price"]
+                                # satış fiyatı
+                                sell_price=buy_price+gridAralik
+                                # satış emri verilecek fiyat icin en yakin index aliniyor
+                                closest_indices = readExcelData.get_value_index("Fiyatlar", sell_price)
+                                buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                #eğer buy_price için daha önceden bir emir verilmediyse
+                                if buy_price not in [order["price"] for order in sell_orders]:
+                                        
+                                    quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
+                                    sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
+                                    if sell_order is not None:
+                                        logging.info(f"Order {sell_order} is created for {symbol}.")
+                                    else:
+                                        logging.error(f"An error occurred while creating a sell order for {symbol}.")
+                                else:
+                                    logging.info(f"Order for {buy_price} already exists. Nothing to do.")
+                        for order in sell_orders:
+                            print(order)
+                            order_id = order["orderId"]
+                            status=trader.check_order_status(symbol, order_id)
+                            if status=="FILLED":
+                                logging.info(f"Order {order_id} is filled.")
+                                sell_orders.remove(order)
+                                with open(DB_FILE_PATH, "w") as f:
+                                    json.dump(trades, f)
+                                # gerçekleşen satış emri olduğu için alış emri verilecek
+                                # satış fiyatı
+                                sell_price=order["price"]
+                                # alış fiyatı
+                                buy_price=sell_price-gridAralik
+                                # alış emri verilecek fiyat icin en yakin index aliniyor
+                                closest_indices = readExcelData.get_value_index("Fiyatlar", buy_price)
+                                buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                #eğer buy_price için daha önceden bir emir verilmediyse
+                                if buy_price not in [order["price"] for order in buy_orders]:
+                                    quantity=readExcelData.get_cell_data(closest_indices[0], "Alis Adet")
+                                    buy_order=trader.buy(symbol,"LIMIT",quantity, buy_price)
+                                    if buy_order is not None:
+                                        logging.info(f"Order {buy_order} is created for {symbol}.")
+                                    else:
+                                        logging.error(f"An error occurred while creating a buy order for {symbol}.")
+                                else:
+                                    logging.info(f"Order for {buy_price} already exists. Nothing to do.")
+                                    
             else:
                 logging.info(f"{symbol} is not in the state file.")
