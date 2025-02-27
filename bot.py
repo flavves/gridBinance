@@ -138,7 +138,7 @@ def run_bot():
                             if status=="FILLED":
                                 logging.info(f"Order {order_id} is filled.")
                                 sell_orders.remove(order)
-                                sell_orders[symbol]["sellOrders"] = sell_orders
+                                trades[symbol]["sellOrders"] = sell_orders
                                 with open(DB_FILE_PATH, "w") as f:
                                     json.dump(trades, f)
                                 # gerçekleşen satış emri olduğu için alış emri verilecek
@@ -187,7 +187,7 @@ def run_bot():
                             #eğer buy_price için daha önceden bir emir verilmediyse
                             if sell_price not in [order["price"] for order in sell_orders]:
                                 quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
-                                if holdingSymbol > quantity:
+                                if holdingSymbol >= quantity:
                                     #simdi satıs emri verilebilir.
                                     sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
                                     if sell_order is not None:
