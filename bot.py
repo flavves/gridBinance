@@ -164,7 +164,7 @@ def run_bot():
                                 else:
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
                     
-                    """
+                    time.sleep(2)
                     # elde eğer satış yapacak kadar o sembolden para birikirse satış yapılacak listeye dayanarak.
                     with open(DB_FILE_PATH, "r") as f:
                         trades = json.load(f)
@@ -173,7 +173,28 @@ def run_bot():
                     if symbol in trades:
                         sell_orders = trades[symbol].get("sellOrders", [])
                         for order in sell_orders:
-                            holdingSymbol=trader.get_coin_balance(symbol)    
-                    """                
+                            coinName = symbol.split("USDT")[0]
+                            holdingSymbol=trader.get_coin_balance(coinName)    
+                            max_sell_price = max(float(order["price"]) for order in sell_orders)
+                            new_sell_price = max_sell_price + gridAralik
+                            logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
+                            logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
+                            closest_indices = readExcelData.get_value_index("Fiyatlar", new_sell_price)
+                            if closest_indices is None:
+                                logging.error(f"Could not find a closest index for buy price {new_sell_price}.")
+                                continue
+                            sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                            #eğer buy_price için daha önceden bir emir verilmediyse
+                            if sell_price not in [order["price"] for order in sell_orders]:
+                                quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
+                                if holdingSymbol > quantity:
+                                    #simdi satıs emri verilebilir.
+                                    sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
+                                    if sell_order is not None:
+                                        logging.info(f"Order {sell_order} is created for {symbol}.")
+                                    else:
+                                        logging.error(f"An error occurred while creating a sell order for {symbol}.")
+                                    
+                                                
             else:
                 logging.info(f"{symbol} is not in the state file.")
