@@ -73,11 +73,16 @@ def run_bot():
             if symbol in state:
                 if state[symbol] == "started":
                     bulkPurchase = BulkPurchase(trader, readExcelData, symbol, DB_OUTPUT_FILE_PATH, telegram_sender, data)
-                    bulkPurchase.execute_bulk_purchase()
-                    state[symbol] = "completed"
-                    with open(STATE_FILE, "w") as f:
-                        json.dump(state, f)
-                    logging.info(f"Bulk purchase executed for {symbol}.")
+                    result=bulkPurchase.execute_bulk_purchase()
+                    if result != -1:
+                        state[symbol] = "completed"
+                        with open(STATE_FILE, "w") as f:
+                            json.dump(state, f)
+                        logging.info(f"Bulk purchase executed for {symbol}.")
+                    else:
+                        logging.error("bulk is failed wait 10 sec")
+                        time.sleep(10)
+                    
                 elif state[symbol] == "completed":
                     logging.info(f"Bulk purchase not allowed for {symbol} as it is already completed.")
 
@@ -89,8 +94,12 @@ def run_bot():
                     # 1 grid aralık degerini  alıyorum 
                     gridAralik=readExcelData.get_cell_data(0, "GRID ARALIK")
                     # trades.json içine bakıyorum anlık fiyat için bir emir gerçekleşmiş mi bakıyorum.
-                    with open(DB_FILE_PATH, "r") as f:
-                        trades = json.load(f)
+                    try:
+                        with open(DB_FILE_PATH, "r") as f:
+                            trades = json.load(f)
+                    except:
+                        logging.error("cannot find trades file.")
+                        return
                     if trades is not None:
                         logging.info(f"Trades: {trades}")
                     if symbol in trades:
@@ -174,7 +183,11 @@ def run_bot():
                         sell_orders = trades[symbol].get("sellOrders", [])
                         for order in sell_orders:
                             coinName = symbol.split("USDT")[0]
-                            holdingSymbol=trader.get_coin_balance(coinName)    
+                            holdingSymbol=trader.get_coin_balance(coinName)
+                            if holdingSymbol is None:
+                                logging.error("binance api error. Cannot get coin balance")
+                                continue
+                                
                             max_sell_price = max(float(order["price"]) for order in sell_orders)
                             new_sell_price = max_sell_price + gridAralik
                             logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")

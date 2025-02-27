@@ -35,11 +35,11 @@ class BulkPurchase:
         if self.binanceMoney is None or self.binanceMoney == -1:
             self.telegram_sender.send_message("🧨 Banka Hesabınızda Yeterli Bakiye Yok Error")
             logging.error("Banka Hesabınızda Yeterli Bakiye Yok Error")
-            return
+            return -1
         if self.currentPrice is None or self.currentPrice == -1:
             self.telegram_sender.send_message("🧨 Anlık fiyat alınamadı")
             logging.error("Anlık fiyat alınamadı Durduruluyor")
-            return
+            return -1
         logging.info("Toplu alım için anlık fiyata en yakın fiyatlar alınıyor")
         closest_indices = self.readExcelData.get_value_index("Fiyatlar", self.currentPrice)
         totalBuyQuantity = 0
@@ -56,7 +56,7 @@ class BulkPurchase:
                     self.telegram_sender.send_message("🧨 Banka Hesabınızdaki para Binance hesabınızdaki paradan fazla"
                                                       "Binance hesabınızdaki parayı arttırın")
                     logging.error("Banka Hesabınızdaki para Binance hesabınızdaki paradan fazla")
-                    return
+                    return -1
                 satisOran= 1-satisOran
                 self.bankMoney=self.bankMoney * satisOran
                 
@@ -83,7 +83,7 @@ class BulkPurchase:
         if totalBuyQuantity == 0:
             self.telegram_sender.send_message("🧨 Toplu alım için uygun fiyat bulunamadı")
             logging.info("Toplu alım için uygun fiyat bulunamadı")
-            return
+            return -1
         
         logging.info(f"Toplu alım bitti, total buy quantity: {totalBuyQuantity}")
 
@@ -162,3 +162,4 @@ class BulkPurchase:
                 logging.info(f"Current price: {self.currentPrice}, Buy price: {buy_price}, Total buy quantity: {totalBuyQuantity}")
                 self.trader.buy(self.symbol,"LIMIT",buy_quantity, buy_price)
         self.telegram_sender.send_message("🛎 Toplu alım bitti Grid bot başlamıştır başarılar 💸💸💸🎊🎊🎊")
+        return 1

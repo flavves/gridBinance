@@ -1,5 +1,5 @@
 import requests
-
+import logging
 class TelegramMessageSender:
     def __init__(self, bot_token, chat_id):
         self.bot_token = bot_token
@@ -10,9 +10,12 @@ class TelegramMessageSender:
         data = {'chat_id': self.chat_id, 'text': text}
         response = requests.post(url, data=data)
         if response.status_code == 200:
+            logging.info("Message sent successfully")
             return "Message sent successfully"
         else:
+            logging.error(f"Failed to send message: {response.status_code} - {response.text}")
             return f"Failed to send message: {response.status_code} - {response.text}"
+            
 
 """
 # Usage example
