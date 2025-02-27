@@ -163,6 +163,17 @@ def run_bot():
                                         logging.error(f"An error occurred while creating a buy order for {symbol}.")
                                 else:
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
-                                    
+                    
+                    """
+                    # elde eğer satış yapacak kadar o sembolden para birikirse satış yapılacak listeye dayanarak.
+                    with open(DB_FILE_PATH, "r") as f:
+                        trades = json.load(f)
+                    if trades is not None:
+                        logging.info(f"Trades: {trades}")
+                    if symbol in trades:
+                        sell_orders = trades[symbol].get("sellOrders", [])
+                        for order in sell_orders:
+                            holdingSymbol=trader.get_coin_balance(symbol)    
+                    """                
             else:
                 logging.info(f"{symbol} is not in the state file.")
