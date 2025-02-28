@@ -17,6 +17,7 @@ class BulkPurchase:
 
 
     def getCurrentPrice(self,symbol):
+        time.sleep(1)
         try:
             base_url = "https://api.binance.com/api/v3/ticker/price"
             url = f"{base_url}?symbol={symbol}"

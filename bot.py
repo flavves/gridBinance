@@ -123,7 +123,7 @@ def run_bot():
                                 # alış fiyatı
                                 buy_price=order["price"]
                                 # satış fiyatı
-                                sell_price=buy_price+gridAralik
+                                sell_price=float(buy_price)+float(gridAralik)
                                 # satış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", sell_price)
                                 if closest_indices is None:
@@ -154,7 +154,7 @@ def run_bot():
                                 # satış fiyatı
                                 sell_price=order["price"]
                                 # alış fiyatı
-                                buy_price=sell_price-gridAralik
+                                buy_price=float(sell_price)-float(gridAralik)
                                 # alış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", buy_price)
                                 if closest_indices is None:
@@ -189,7 +189,7 @@ def run_bot():
                                 continue
                                 
                             max_sell_price = max(float(order["price"]) for order in sell_orders)
-                            new_sell_price = max_sell_price + gridAralik
+                            new_sell_price = float(max_sell_price) + float(gridAralik)
                             logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
                             logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
                             closest_indices = readExcelData.get_value_index("Fiyatlar", new_sell_price)
@@ -200,7 +200,7 @@ def run_bot():
                             #eğer buy_price için daha önceden bir emir verilmediyse
                             if sell_price not in [order["price"] for order in sell_orders]:
                                 quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
-                                if holdingSymbol >= quantity:
+                                if float(holdingSymbol) >= float(quantity):
                                     #simdi satıs emri verilebilir.
                                     sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
                                     if sell_order is not None:
