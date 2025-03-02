@@ -1,15 +1,14 @@
 from binance.client import Client
 from binance.enums import *
-import DBManager
 import TelegramMessageSender
 import logging  # Added logging import
-
+import DBManager
 class BinanceTrader:
     def __init__(self, api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id):
         self.client = Client(api_key, api_secret)
-        self.db_manager = DBManager.DBManager(db_file_path)
         self.telegram_sender = TelegramMessageSender.TelegramMessageSender(telegram_bot_token, telegram_chat_id)
-
+        self.dbFilePath = db_file_path
+        
     def place_order(self, symbol, side, order_type, quantity, price=None, test=False, isBulk=False):
         """
         Place an order on Binance.
@@ -72,7 +71,8 @@ class BinanceTrader:
             trade_type = 'buy' if side == SIDE_BUY else 'sell'
             # Eger toplu alim degilse db ye ekle toplu alimlar db ye eklenmez
             if isBulk == False:
-                self.db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
+                db_manager = DBManager.DBManager(self.dbFilePath)
+                db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
 
             # Send a message to Telegram
             message = f"⌛️⌛️ Binance Trader => Emir verildi: {trade_type.upper()} {quantity} {symbol} Fiyat {price if price else 'market price'}"

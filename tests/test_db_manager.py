@@ -36,7 +36,7 @@ def test_update_trade(db_manager):
 
 def test_delete_trade(db_manager):
     db_manager.add_trade("BTCUSDT", "buy", 50000, 0.001, "order_123")
-    response = db_manager.delete_trade("BTCUSDT", "buyOrders", 50000)
-    assert response == "Trade with price 50000 deleted successfully."
+    response = db_manager.delete_trade("BTCUSDT", "buyOrders", "order_123")
+    assert response == "Trade with Order ID order_123 deleted successfully."
     trades = db_manager.get_trades("BTCUSDT")
     assert len(trades["buyOrders"]) == 0

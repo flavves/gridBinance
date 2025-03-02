@@ -3,9 +3,9 @@ def frange(start, stop, step):
         yield round(start, 3)  # Üç basamağa yuvarladık
         start += step
 
-start = 0.28
-end = 0.15
-step = -0.005  # Belirtilen adımla azalacak
+start = 3.10
+end = 2.60
+step = -0.01  # Belirtilen adımla azalacak
 
 numbers = list(frange(start, end, step))
 

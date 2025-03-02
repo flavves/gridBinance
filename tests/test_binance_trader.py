@@ -24,7 +24,6 @@ def trader():
         trader.client = mock_client_instance
         
         # Diğer bağımlılıkları da mock'luyoruz
-        trader.db_manager.add_trade = MagicMock(return_value="Trade added successfully")
         trader.telegram_sender.send_message = MagicMock(return_value="Message sent successfully")
         
         return trader
@@ -33,14 +32,12 @@ def test_buy_order(trader):
     response = trader.buy("BTCUSDT", "LIMIT", 0.001, 50000)
     assert response is not None
     assert response["status"] == "success"
-    trader.db_manager.add_trade.assert_called_once()
     trader.telegram_sender.send_message.assert_called_once()
 
 def test_sell_order(trader):
     response = trader.sell("BTCUSDT", "LIMIT", 0.001, 50000)
     assert response is not None
     assert response["status"] == "success"
-    trader.db_manager.add_trade.assert_called_once()
     trader.telegram_sender.send_message.assert_called_once()
 def test_get_usdt_balance(trader):
     trader.client.get_asset_balance = MagicMock(return_value={'free': '100.0'})

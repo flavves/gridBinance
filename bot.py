@@ -9,7 +9,7 @@ import TelegramMessageSender
 from BulkPurchase import BulkPurchase
 import requests
 import logging  # Added logging import
-
+import DBManager
 LIMIT="LIMIT"
 MARKET="MARKET"
 load_dotenv()
@@ -45,7 +45,6 @@ def run_bot():
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
     telegram_sender = TelegramMessageSender.TelegramMessageSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-    
     trader = startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     
     while 1:
@@ -69,6 +68,7 @@ def run_bot():
             # Check the state of the coin
             with open(STATE_FILE, "r") as f:
                 state = json.load(f)
+                f.close()
             
             if symbol in state:
                 if state[symbol] == "started":
@@ -78,6 +78,7 @@ def run_bot():
                         state[symbol] = "completed"
                         with open(STATE_FILE, "w") as f:
                             json.dump(state, f)
+                            f.close()
                         logging.info(f"Bulk purchase executed for {symbol}.")
                     else:
                         logging.error("bulk is failed wait 10 sec")
@@ -94,15 +95,19 @@ def run_bot():
                     # 1 grid aralık degerini  alıyorum 
                     gridAralik=readExcelData.get_cell_data(0, "GRID ARALIK")
                     # trades.json içine bakıyorum anlık fiyat için bir emir gerçekleşmiş mi bakıyorum.
+                    
+                    #db yi yükle
+                    db_manager = DBManager.DBManager(DB_FILE_PATH)
+                    
                     try:
-                        with open(DB_FILE_PATH, "r") as f:
-                            trades = json.load(f)
+                        trades=db_manager.get_all_trades()
                     except:
                         logging.error("cannot find trades file.")
                         return
                     if trades is not None:
                         logging.info(f"Trades: {trades}")
                     if symbol in trades:
+                        
                         buy_orders = trades[symbol].get("buyOrders", [])
                         sell_orders = trades[symbol].get("sellOrders", [])
                         logging.info(f"Buy Orders for {symbol}: {buy_orders}")
@@ -112,12 +117,11 @@ def run_bot():
                             print(order)
                             order_id = order["orderId"]
                             status = trader.check_order_status(symbol, order_id)
+                            orderFilledFlag=False
                             if status == "FILLED":
+                                orderFilledFlag=True
                                 logging.info(f"Order {order_id} is filled.")
-                                buy_orders.remove(order)
-                                trades[symbol]["buyOrders"] = buy_orders
-                                with open(DB_FILE_PATH, "w") as f:
-                                    json.dump(trades, f)
+                                db_manager.delete_trade(symbol,"buyOrders",order_id)
                                 # gerçekleşen alış emri olduğu için satış emri verilecek
                                 # alış fiyatından grid aralık kadar yukarıda satış emri verilecek
                                 # alış fiyatı
@@ -140,16 +144,17 @@ def run_bot():
                                         logging.error(f"An error occurred while creating a sell order for {symbol}.")
                                 else:
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
+                        if orderFilledFlag==True:
+                            continue
                         for order in sell_orders:
                             print(order)
                             order_id = order["orderId"]
                             status=trader.check_order_status(symbol, order_id)
+                            orderFilledFlag=False
                             if status=="FILLED":
+                                orderFilledFlag=True
                                 logging.info(f"Order {order_id} is filled.")
-                                sell_orders.remove(order)
-                                trades[symbol]["sellOrders"] = sell_orders
-                                with open(DB_FILE_PATH, "w") as f:
-                                    json.dump(trades, f)
+                                db_manager.delete_trade(symbol,"sellOrders",order_id)
                                 # gerçekleşen satış emri olduğu için alış emri verilecek
                                 # satış fiyatı
                                 sell_price=order["price"]
@@ -172,11 +177,15 @@ def run_bot():
                                         logging.error(f"An error occurred while creating a buy order for {symbol}.")
                                 else:
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
-                    
+                        if orderFilledFlag==True:
+                            continue
                     time.sleep(2)
                     # elde eğer satış yapacak kadar o sembolden para birikirse satış yapılacak listeye dayanarak.
-                    with open(DB_FILE_PATH, "r") as f:
-                        trades = json.load(f)
+                    try:
+                        trades=db_manager.get_all_trades()
+                    except:
+                        logging.error("cannot find trades file.")
+                        return
                     if trades is not None:
                         logging.info(f"Trades: {trades}")
                     if symbol in trades:
