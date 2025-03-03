@@ -2,56 +2,62 @@ import pandas as pd
 import openpyxl
 import os
 import json
+import logging
+
 class ReadExcelData:
     def __init__(self, file_path):
         self.file_path = file_path
         self.data = None
-        self.sheetNames=None
+        self.sheetNames = None
+        logging.info(f"ReadExcelData instance created for file: {file_path}")
 
     def read_data(self):
         try:
             self.data = pd.read_excel(self.file_path)
+            logging.info("Excel data successfully read.")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logging.error(f"Error reading Excel data: {e}")
 
     def get_data(self):
         if self.data is not None:
             return self.data
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
         
     def save_sheet_Names_To_Json(self):
         try:
             with open('sheetNames.json', 'w') as f:
-                f.write(json.dumps(self.sheetNames))
+                json.dump(self.sheetNames, f)
+            logging.info("Sheet names successfully saved to JSON.")
         except Exception as e:
-            print(f"An error occurred")
+            logging.error(f"Error saving sheet names to JSON: {e}")
             
     def get_sheet_names(self):
         try:
             wb = openpyxl.load_workbook(self.file_path)
-            sheet_names = wb.sheetnames
-            self.sheetNames=sheet_names
+            self.sheetNames = wb.sheetnames
             self.save_sheet_Names_To_Json()
-            return sheet_names
+            logging.info("Sheet names retrieved successfully.")
+            return self.sheetNames
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logging.error(f"Error retrieving sheet names: {e}")
             return None
         
     def get_sheet_data(self, sheet_name):
         try:
             data = pd.read_excel(self.file_path, sheet_name=sheet_name)
+            logging.info(f"Data read from sheet: {sheet_name}")
             return data
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logging.error(f"Error reading data from sheet {sheet_name}: {e}")
             return None
     
     def get_column_names(self):
         if self.data is not None:
             return self.data.columns
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_column_data(self, column_name):
@@ -59,17 +65,17 @@ class ReadExcelData:
             if column_name in self.data.columns:
                 return self.data[column_name]
             else:
-                print(f"Column '{column_name}' does not exist.")
+                logging.warning(f"Column '{column_name}' does not exist.")
                 return None
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_row_data(self, row_index):
         if self.data is not None:
             return self.data.iloc[row_index]
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_cell_data(self, row_index, column_name):
@@ -77,17 +83,17 @@ class ReadExcelData:
             if column_name in self.data.columns:
                 return self.data.at[row_index, column_name]
             else:
-                print(f"Column '{column_name}' does not exist.")
+                logging.warning(f"Column '{column_name}' does not exist.")
                 return None
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_cell_data_by_index(self, row_index, column_index):
         if self.data is not None:
             return self.data.iat[row_index, column_index]
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_value_counts(self, column_name):
@@ -95,10 +101,10 @@ class ReadExcelData:
             if column_name in self.data.columns:
                 return self.data[column_name].value_counts()
             else:
-                print(f"Column '{column_name}' does not exist.")
+                logging.warning(f"Column '{column_name}' does not exist.")
                 return None
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
     
     def get_unique_values(self, column_name):
@@ -106,10 +112,10 @@ class ReadExcelData:
             if column_name in self.data.columns:
                 return self.data[column_name].unique()
             else:
-                print(f"Column '{column_name}' does not exist.")
+                logging.warning(f"Column '{column_name}' does not exist.")
                 return None
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
 
     def get_value_index(self, column_name, value):
@@ -121,13 +127,13 @@ class ReadExcelData:
                 else:
                     closest_value = self.data[column_name].iloc[(self.data[column_name] - value).abs().argsort()[:1]].values[0]
                     closest_indices = self.data.index[self.data[column_name] == closest_value].tolist()
-                    print(f"Exact value '{value}' not found. Closest value is '{closest_value}'.")
+                    logging.warning(f"Exact value '{value}' not found. Closest value is '{closest_value}'.")
                     return closest_indices
             else:
-                print(f"Column '{column_name}' does not exist.")
+                logging.warning(f"Column '{column_name}' does not exist.")
                 return None
         else:
-            print("No data available. Please read the data first.")
+            logging.warning("No data available. Please read the data first.")
             return None
 
 """

@@ -127,15 +127,34 @@ def run_bot():
                                 buy_price=order["price"]
                                 # satış fiyatı
                                 sell_price=float(buy_price)+float(gridAralik)
+                                logging.info(f"buy_price: {buy_price}, sell_price: {sell_price}, gridAralik: {gridAralik}")
                                 # satış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", sell_price)
                                 if closest_indices is None:
                                     logging.error(f"Could not find a closest index for buy price {buy_price}.")
                                     continue
                                 sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                try:
+                                    logging.info(f"NEW sell_price: {sell_price}, sell_price Index: {closest_indices[0]}")
+                                except:
+                                    pass
                                 #eğer buy_price için daha önceden bir emir verilmediyse
                                 if str(sell_price) not in [order["price"] for order in sell_orders]:
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
+                                    logging.info(f"EMIR VERILIYOR SATIS quantity: {quantity}, symbol: {symbol}, sell_price: {sell_price}")
+                                    while True:
+                                        coinName = symbol.split("USDT")[0]
+                                        coinBalance = trader.get_coin_balance(coinName)
+                                        logging.info(f"Hesapta alınan coin miktarı kontrol ediliyor coinBalance / quantity: {coinBalance} / {quantity}")
+                                        telegram_sender.send_message(f"Hesapta alınan coin miktarı kontrol ediliyor coinBalance / quantity: {coinBalance} / {quantity}")
+                                        try:
+                                            if coinBalance >= quantity:
+                                                logging.info("Satış Emir icin gerekli adet Karşılandı")
+                                                telegram_sender.send_message("🛎 Satış Emir icin gerekli adet Karşılandı")
+                                                break
+                                        except:
+                                            logging.info("Alım daha tamamlanmadı")
+                                        time.sleep(10)
                                     sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
                                     if sell_order is not None:
                                         logging.info(f"Order {sell_order} is created for {symbol}.")
@@ -152,23 +171,32 @@ def run_bot():
                             if status=="FILLED":
                                 orderFilledFlag=True
                                 logging.info(f"Order {order_id} is filled.")
+                                time.sleep(0.1)
                                 db_manager.delete_trade(symbol,"sellOrders",order_id)
                                 # gerçekleşen satış emri olduğu için alış emri verilecek
                                 # satış fiyatı
                                 sell_price=order["price"]
                                 # alış fiyatı
                                 buy_price=float(sell_price)-float(gridAralik)
+                                logging.info(f"buy_price: {buy_price}, sell_price: {sell_price}, gridAralik: {gridAralik}")
+
                                 # alış emri verilecek fiyat icin en yakin index aliniyor
                                 closest_indices = readExcelData.get_value_index("Fiyatlar", buy_price)
                                 if closest_indices is None:
                                     logging.error(f"Could not find a closest index for buy price {buy_price}.")
                                     continue
                                 buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                try:
+                                    logging.info(f"NEW buy_price: {buy_price}, buy_price Index: {closest_indices[0]}")
+                                except:
+                                    pass
                                 #eğer buy_price için daha önceden bir emir verilmediyse
                                 
                                 if str(buy_price) not in [order["price"] for order in buy_orders]:
                                     
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Alis Adet")
+                                    logging.info(f"EMIR VERILIYOR ALIS quantity: {quantity}, symbol: {symbol}, buy_price: {buy_price}")
+
                                     buy_order=trader.buy(symbol,"LIMIT",quantity, buy_price)
                                     if buy_order is not None:
                                         logging.info(f"Order {buy_order} is created for {symbol}.")

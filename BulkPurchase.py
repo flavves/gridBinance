@@ -94,17 +94,20 @@ class BulkPurchase:
         logging.info(f"Market emri: {totalBuyQuantity} adet için alım emri verildi")
         logging.info(f"Emir detayları: {order}")
         while True:
+            time.sleep(3)
             coinName = self.symbol.split("USDT")[0]
             coinBalance = self.trader.get_coin_balance(coinName)
-            logging.info(f"Hesapta alınan coin miktarı kontrol ediliyor: {coinBalance}/{totalBuyQuantity}")
+            order_id = order["orderId"]
+            status = self.trader.check_order_status(self.symbol, order_id)
+            logging.info(f"Hesapta alınan coin miktarı kontrol ediliyor: {coinBalance}/{totalBuyQuantity}, status{status}")
+
             try:
-                if coinBalance >= totalBuyQuantity:
-                    logging.info("Alım işlemi tamamlandı")
-                    self.telegram_sender.send_message("🛎 Toplu alım emirleri gerçekleşti satış ve alım emirleri verilecek. 🎊 ")
-                    break
+               if status == "FILLED":
+                   logging.info("Alım tamamlandı")
+                   break
             except:
                 logging.info("Alım daha tamamlanmadı")
-            time.sleep(10)
+            time.sleep(7)
 
         #sell orders
         logging.info("Satış emri veriliyor")

@@ -15,7 +15,7 @@ def db_manager(tmp_path):
 
 def test_add_trade(db_manager):
     response = db_manager.add_trade("BTCUSDT", "buy", 50000, 0.001, "order_123")
-    assert response == "Trade added successfully: buy 0.001 BTCUSDT at 50000"
+    assert response == 1
     trades = db_manager.get_trades("BTCUSDT")
     assert len(trades["buyOrders"]) == 1
 

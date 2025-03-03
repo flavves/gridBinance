@@ -80,7 +80,7 @@ class BinanceTrader:
                         pass
                     else:
                         logging.error("binancetrader dbmanager added error.")
-                        return None
+                        
                 except:
                     logging.error("Cannot add data to db!! Check Order!")
                     
@@ -97,7 +97,7 @@ class BinanceTrader:
             self.telegram_sender.send_message(error_message)
             time.sleep(1)
             try:
-                self.telegram_sender.send_message(f"🧨🧨🧨 Binance Trader => sembol: {symbol}, adet: {quantity}, tip:{side}")
+                self.telegram_sender.send_message(f"🧨🧨🧨 Binance Trader => sembol: {symbol}, adet: {quantity}, tip:{side}, fiyat:{price}")
             except:
                 pass
             return None
