@@ -3,6 +3,7 @@ from binance.enums import *
 import TelegramMessageSender
 import logging  # Added logging import
 import DBManager
+import time
 class BinanceTrader:
     def __init__(self, api_key, api_secret, db_file_path, telegram_bot_token, telegram_chat_id):
         self.client = Client(api_key, api_secret)
@@ -94,6 +95,11 @@ class BinanceTrader:
             error_message = f"Binance Trader => Alım satım kısmında hata olustu 🧨🧨🧨 {e}"
             logging.error(error_message)
             self.telegram_sender.send_message(error_message)
+            time.sleep(1)
+            try:
+                self.telegram_sender.send_message(f"🧨🧨🧨 Binance Trader => sembol: {symbol}, adet: {quantity}, tip:{side}")
+            except:
+                pass
             return None
 
     def buy(self, symbol, order_type, quantity, price=None, test=False, isBulk=False):

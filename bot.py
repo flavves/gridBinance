@@ -114,7 +114,6 @@ def run_bot():
                         logging.info(f"Sell Orders for {symbol}: {sell_orders}")
                         # order id değerlerine bakılcak ve gerçekleşen emirler silinecek
                         for order in buy_orders:
-                            print(order)
                             order_id = order["orderId"]
                             status = trader.check_order_status(symbol, order_id)
                             orderFilledFlag=False
@@ -135,7 +134,7 @@ def run_bot():
                                     continue
                                 sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                                 #eğer buy_price için daha önceden bir emir verilmediyse
-                                if sell_price not in [order["price"] for order in sell_orders]:
+                                if str(sell_price) not in [order["price"] for order in sell_orders]:
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
                                     sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
                                     if sell_order is not None:
@@ -147,7 +146,6 @@ def run_bot():
                         if orderFilledFlag==True:
                             continue
                         for order in sell_orders:
-                            print(order)
                             order_id = order["orderId"]
                             status=trader.check_order_status(symbol, order_id)
                             orderFilledFlag=False
@@ -209,7 +207,7 @@ def run_bot():
                                 continue
                             sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                             #eğer buy_price için daha önceden bir emir verilmediyse
-                            if sell_price not in [order["price"] for order in sell_orders]:
+                            if str(sell_price) not in [order["price"] for order in sell_orders]:
                                 quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
                                 if float(holdingSymbol) >= float(quantity):
                                     #simdi satıs emri verilebilir.
