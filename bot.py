@@ -167,7 +167,8 @@ def run_bot():
                                     continue
                                 buy_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
                                 #eğer buy_price için daha önceden bir emir verilmediyse
-                                if buy_price not in [order["price"] for order in buy_orders]:
+                                
+                                if str(buy_price) not in [order["price"] for order in buy_orders]:
                                     
                                     quantity=readExcelData.get_cell_data(closest_indices[0], "Alis Adet")
                                     buy_order=trader.buy(symbol,"LIMIT",quantity, buy_price)
@@ -187,7 +188,8 @@ def run_bot():
                         logging.error("cannot find trades file.")
                         return
                     if trades is not None:
-                        logging.info(f"Trades: {trades}")
+                        pass
+                        #logging.info(f"Trades: {trades}")
                     if symbol in trades:
                         sell_orders = trades[symbol].get("sellOrders", [])
                         for order in sell_orders:
@@ -199,8 +201,8 @@ def run_bot():
                                 
                             max_sell_price = max(float(order["price"]) for order in sell_orders)
                             new_sell_price = float(max_sell_price) + float(gridAralik)
-                            logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
-                            logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
+                            #logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
+                            #logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
                             closest_indices = readExcelData.get_value_index("Fiyatlar", new_sell_price)
                             if closest_indices is None:
                                 logging.error(f"Could not find a closest index for buy price {new_sell_price}.")

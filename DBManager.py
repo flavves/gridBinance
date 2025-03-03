@@ -51,7 +51,8 @@ class DBManager:
         })
 
         if self.save_data():
-            return f"Trade added successfully: {trade_type} {qty} {coin} at {price}"
+            logging.info(f"Trade added successfully: {trade_type} {qty} {coin} at {price}")
+            return 1
         return "Error: Failed to save trade."
 
     def update_trade(self, coin, trade_type, index, price=None, qty=None):

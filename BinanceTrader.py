@@ -72,7 +72,17 @@ class BinanceTrader:
             # Eger toplu alim degilse db ye ekle toplu alimlar db ye eklenmez
             if isBulk == False:
                 db_manager = DBManager.DBManager(self.dbFilePath)
-                db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
+                result=db_manager.add_trade(symbol, trade_type, str(price), str(quantity), order['orderId'])
+                try:
+                    if result==1:
+                        logging.info("data was added succesfuly to db")
+                        pass
+                    else:
+                        logging.error("binancetrader dbmanager added error.")
+                        return None
+                except:
+                    logging.error("Cannot add data to db!! Check Order!")
+                    
 
             # Send a message to Telegram
             message = f"⌛️⌛️ Binance Trader => Emir verildi: {trade_type.upper()} {quantity} {symbol} Fiyat {price if price else 'market price'}"
