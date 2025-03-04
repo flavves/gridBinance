@@ -160,6 +160,52 @@ def run_bot():
                                         logging.info(f"Order {sell_order} is created for {symbol}.")
                                     else:
                                         logging.error(f"An error occurred while creating a sell order for {symbol}.")
+            
+                                    #elde fazladan koin varsa onun da satisini ver
+                                    time.sleep(2)
+                                    # elde eğer satış yapacak kadar o sembolden para birikirse satış yapılacak listeye dayanarak.
+                                    try:
+                                        trades=db_manager.get_all_trades()
+                                    except:
+                                        logging.error("cannot find trades file.")
+                                        return
+                                    if trades is not None:
+                                        pass
+                                        #logging.info(f"Trades: {trades}")
+                                    if symbol in trades:
+                                        sell_orders = trades[symbol].get("sellOrders", [])
+                                        for order in sell_orders:
+                                            coinName = symbol.split("USDT")[0]
+                                            holdingSymbol=trader.get_coin_balance(coinName)
+                                            if holdingSymbol is None:
+                                                logging.error("binance api error. Cannot get coin balance")
+                                                continue
+                                                
+                                            max_sell_price = max(float(order["price"]) for order in sell_orders)
+                                            new_sell_price = float(max_sell_price) + float(gridAralik)
+                                            #logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
+                                            #logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
+                                            closest_indices = readExcelData.get_value_index("Fiyatlar", new_sell_price)
+                                            if closest_indices is None:
+                                                logging.error(f"Could not find a closest index for buy price {new_sell_price}.")
+                                                continue
+                                            sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
+                                            #eğer buy_price için daha önceden bir emir verilmediyse
+                                            if str(sell_price) not in [order["price"] for order in sell_orders]:
+                                                quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
+                                                if float(holdingSymbol) >= float(quantity):
+                                                    #simdi satıs emri verilebilir.
+                                                    sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
+                                                    if sell_order is not None:
+                                                        logging.info(f"Order {sell_order} is created for {symbol}.")
+                                                    else:
+                                                        logging.error(f"An error occurred while creating a sell order for {symbol}.")
+                                    
+                                                    
+                                    ##
+                                    
+                                    
+                                    
                                 else:
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
                         if orderFilledFlag==True:
@@ -206,44 +252,6 @@ def run_bot():
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
                         if orderFilledFlag==True:
                             continue
-                    time.sleep(2)
-                    # elde eğer satış yapacak kadar o sembolden para birikirse satış yapılacak listeye dayanarak.
-                    try:
-                        trades=db_manager.get_all_trades()
-                    except:
-                        logging.error("cannot find trades file.")
-                        return
-                    if trades is not None:
-                        pass
-                        #logging.info(f"Trades: {trades}")
-                    if symbol in trades:
-                        sell_orders = trades[symbol].get("sellOrders", [])
-                        for order in sell_orders:
-                            coinName = symbol.split("USDT")[0]
-                            holdingSymbol=trader.get_coin_balance(coinName)
-                            if holdingSymbol is None:
-                                logging.error("binance api error. Cannot get coin balance")
-                                continue
-                                
-                            max_sell_price = max(float(order["price"]) for order in sell_orders)
-                            new_sell_price = float(max_sell_price) + float(gridAralik)
-                            #logging.info(f"Mevcut en yüksek satış fiyatı: {max_sell_price}")
-                            #logging.info(f"Yeni satış fiyatı: {new_sell_price}")   
-                            closest_indices = readExcelData.get_value_index("Fiyatlar", new_sell_price)
-                            if closest_indices is None:
-                                logging.error(f"Could not find a closest index for buy price {new_sell_price}.")
-                                continue
-                            sell_price = readExcelData.get_cell_data(closest_indices[0], "Fiyatlar")
-                            #eğer buy_price için daha önceden bir emir verilmediyse
-                            if str(sell_price) not in [order["price"] for order in sell_orders]:
-                                quantity=readExcelData.get_cell_data(closest_indices[0], "Satis Adet")
-                                if float(holdingSymbol) >= float(quantity):
-                                    #simdi satıs emri verilebilir.
-                                    sell_order=trader.sell(symbol,"LIMIT",quantity, sell_price)
-                                    if sell_order is not None:
-                                        logging.info(f"Order {sell_order} is created for {symbol}.")
-                                    else:
-                                        logging.error(f"An error occurred while creating a sell order for {symbol}.")
                                     
                                                 
             else:
