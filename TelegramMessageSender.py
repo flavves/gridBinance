@@ -6,16 +6,21 @@ class TelegramMessageSender:
         self.chat_id = chat_id
 
     def send_message(self, text):
-        url = f'https://api.telegram.org/bot{self.bot_token}/sendMessage'
-        data = {'chat_id': self.chat_id, 'text': text}
-        response = requests.post(url, data=data)
-        if response.status_code == 200:
-            logging.info("Message sent successfully")
-            return "Message sent successfully"
-        else:
-            logging.error(f"Failed to send message: {response.status_code} - {response.text}")
-            return f"Failed to send message: {response.status_code} - {response.text}"
-            
+        try:
+            url = f'https://api.telegram.org/bot{self.bot_token}/sendMessage'
+            data = {'chat_id': self.chat_id, 'text': text}
+            response = requests.post(url, data=data)
+            if response.status_code == 200:
+                logging.info("Message sent successfully")
+                return "Message sent successfully"
+            else:
+                logging.error(f"Failed to send message: {response.status_code} - {response.text}")
+                return f"Failed to send message: {response.status_code} - {response.text}"
+        except:
+            try:
+                logging.error("Telegram mesaj gonderme kodu calismadi:",text)   
+            except:
+                logging.error("Message sender hatasi")
 
 """
 # Usage example

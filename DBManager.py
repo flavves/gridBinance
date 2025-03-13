@@ -6,13 +6,13 @@ class DBManager:
     def __init__(self, file_path):
         self.file_path = file_path
         self.data = self.load_data()
-        logging.info(f"DBManager initialized with file: {self.file_path}")
+        #logging.info(f"DBManager initialized with file: {self.file_path}")
 
     def load_data(self):
         if os.path.exists(self.file_path):
             try:
                 with open(self.file_path, 'r') as file:
-                    logging.info(f"Loading data from {self.file_path}")
+                    #logging.info(f"Loading data from {self.file_path}")
                     return json.load(file)
             except json.JSONDecodeError as e:
                 logging.error(f"Error decoding JSON from {self.file_path}: {e}")

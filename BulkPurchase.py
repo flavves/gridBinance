@@ -89,6 +89,7 @@ class BulkPurchase:
         logging.info(f"Toplu alım bitti, total buy quantity: {totalBuyQuantity}")
 
         self.telegram_sender.send_message(f"🛎 Toplu alım bitti totalBuyQuantity {totalBuyQuantity}")
+        time.sleep(1)
         order=self.trader.buy(self.symbol,"MARKET",totalBuyQuantity, self.currentPrice,isBulk=True)
 
         logging.info(f"Market emri: {totalBuyQuantity} adet için alım emri verildi")
@@ -136,6 +137,7 @@ class BulkPurchase:
                 totalBuyQuantity += buy_quantity
                 logging.info(f"Current price: {self.currentPrice}, Buy price: {buy_price}, Total buy quantity: {totalBuyQuantity}")
                 self.trader.sell(self.symbol,"LIMIT",sell_quantity, buy_price)
+                time.sleep(1)
         
         self.telegram_sender.send_message("Satis emirleri verildi simdi alis emirleri verilecek!")
         logging.info("Alış emri veriliyor.")
@@ -165,5 +167,6 @@ class BulkPurchase:
                 totalBuyQuantity += buy_quantity
                 logging.info(f"Current price: {self.currentPrice}, Buy price: {buy_price}, Total buy quantity: {totalBuyQuantity}")
                 self.trader.buy(self.symbol,"LIMIT",buy_quantity, buy_price)
+                time.sleep(1)
         self.telegram_sender.send_message("🛎 Toplu alım bitti Grid bot başlamıştır başarılar 💸💸💸🎊🎊🎊")
         return 1

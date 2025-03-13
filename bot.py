@@ -9,6 +9,7 @@ import TelegramMessageSender
 from BulkPurchase import BulkPurchase
 import requests
 import logging  # Added logging import
+from logging.handlers import TimedRotatingFileHandler
 import DBManager
 LIMIT="LIMIT"
 MARKET="MARKET"
@@ -55,10 +56,10 @@ def run_bot():
 
         sheet_names = readExcelData.get_sheet_names()
         
-        logging.info("Checking Excel data.")
+        #logging.info("Checking Excel data.")
         for sheet_name in sheet_names:
             symbol = sheet_name  # Ensure symbol is a string
-            logging.info(f"Symbol: {symbol}")
+            #logging.info(f"Symbol: {symbol}")
             symbolPrice = trader.get_current_price(symbol)
             if symbolPrice is None or symbolPrice == -1:
                 telegram_sender.send_message(f"🧨 Fiyat alınırken hata oluştu {symbol}.")
@@ -85,7 +86,7 @@ def run_bot():
                         time.sleep(10)
                     
                 elif state[symbol] == "completed":
-                    logging.info(f"Bulk purchase not allowed for {symbol} as it is already completed.")
+                    #logging.info(f"Bulk purchase not allowed for {symbol} as it is already completed.")
 
                     # bota burada devam ediyoruz simdi 
                     # herhangi bir emir gerçekleşti mi diye bakmamız gerekiyor ilgili coin için
@@ -110,9 +111,10 @@ def run_bot():
                         
                         buy_orders = trades[symbol].get("buyOrders", [])
                         sell_orders = trades[symbol].get("sellOrders", [])
-                        logging.info(f"Buy Orders for {symbol}: {buy_orders}")
-                        logging.info(f"Sell Orders for {symbol}: {sell_orders}")
+                        #logging.info(f"Buy Orders for {symbol}: {buy_orders}")
+                        #logging.info(f"Sell Orders for {symbol}: {sell_orders}")
                         # order id değerlerine bakılcak ve gerçekleşen emirler silinecek
+                        orderFilledFlag=False
                         for order in buy_orders:
                             order_id = order["orderId"]
                             status = trader.check_order_status(symbol, order_id)
@@ -213,6 +215,7 @@ def run_bot():
                                     logging.info(f"Order for {buy_price} already exists. Nothing to do.")
                         if orderFilledFlag==True:
                             continue
+                        orderFilledFlag=False
                         for order in sell_orders:
                             order_id = order["orderId"]
                             status=trader.check_order_status(symbol, order_id)

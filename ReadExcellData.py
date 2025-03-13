@@ -9,7 +9,7 @@ class ReadExcelData:
         self.file_path = file_path
         self.data = None
         self.sheetNames = None
-        logging.info(f"ReadExcelData instance created for file: {file_path}")
+        #logging.info(f"ReadExcelData instance created for file: {file_path}")
 
     def read_data(self):
         try:
