@@ -14,7 +14,7 @@ class ReadExcelData:
     def read_data(self):
         try:
             self.data = pd.read_excel(self.file_path)
-            logging.info("Excel data successfully read.")
+            #logging.info("Excel data successfully read.")
         except Exception as e:
             logging.error(f"Error reading Excel data: {e}")
 
@@ -29,7 +29,7 @@ class ReadExcelData:
         try:
             with open('sheetNames.json', 'w') as f:
                 json.dump(self.sheetNames, f)
-            logging.info("Sheet names successfully saved to JSON.")
+            #logging.info("Sheet names successfully saved to JSON.")
         except Exception as e:
             logging.error(f"Error saving sheet names to JSON: {e}")
             
@@ -38,7 +38,7 @@ class ReadExcelData:
             wb = openpyxl.load_workbook(self.file_path)
             self.sheetNames = wb.sheetnames
             self.save_sheet_Names_To_Json()
-            logging.info("Sheet names retrieved successfully.")
+            #logging.info("Sheet names retrieved successfully.")
             return self.sheetNames
         except Exception as e:
             logging.error(f"Error retrieving sheet names: {e}")
