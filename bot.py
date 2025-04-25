@@ -30,12 +30,42 @@ def startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TE
     trader = BinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
     return trader
 
+def get_ApiKey():
+        try:
+            with open("apikey.json", "r") as f:
+                data = json.load(f)
+                api_key = data.get("api_key")
+                if api_key:
+                    print(f"API Key: {api_key}")
+                    return api_key
+                else:
+                    print("API Key bulunamadı.")
+                    return "-1"
+        except FileNotFoundError:
+            print("apikey.json dosyası bulunamadı.")
+            return "-1"
+def get_ApiSecret():
+        try:
+            with open("apisecret.json", "r") as f:
+                data = json.load(f)
+                api_secret = data.get("api_secret")
+                if api_secret:
+                    print(f"API Secret: {api_secret}")
+                    return api_secret
+                else:
+                    print("API Secret bulunamadı.")
+                    return "-1"
+        except FileNotFoundError:
+            print("apisecret.json dosyası bulunamadı.")
+            return "-1"
+
+
 def run_bot():
     global API_KEY, API_SECRET, DB_FILE_PATH,DB_OUTPUT_FILE_PATH,EXCELL_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
     global BULK_PURCHASE_FLAG
     global telegram_sender
-    API_KEY = os.getenv('BINANCE_API_KEY')
-    API_SECRET = os.getenv('BINANCE_API_SECRET')
+    API_KEY = get_ApiKey() #os.getenv('BINANCE_API_KEY')
+    API_SECRET = get_ApiSecret() #os.getenv('BINANCE_API_SECRET')
     home_dir = os.path.expanduser('~')
     base_dir = os.path.dirname(os.path.abspath(__file__))
     DB_FILE_PATH = os.path.join(base_dir, 'trades.json')
@@ -46,11 +76,26 @@ def run_bot():
     TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
     telegram_sender = TelegramMessageSender.TelegramMessageSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-    trader = startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-    
+    #trader = startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+    traderStatus = False
     while 1:
+        API_KEY = get_ApiKey()
+        API_SECRET = get_ApiSecret()
+        if API_KEY == "-1" or API_SECRET == "-1":
+            traderStatus = False
+            logging.error("API Key or Secret not found. Please check the files.")
+            telegram_sender.send_message("API Key or Secret not found. Please check the files.")
+            time.sleep(60)
+            continue
+        
+        if traderStatus == False:
+            trader = startBinanceTrader(API_KEY, API_SECRET, DB_FILE_PATH, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+            traderStatus = True
+            logging.info("Trader started.")
+            telegram_sender.send_message("Trader started.")    
+
         readExcelData = ReadExcelData(EXCELL_FILE_PATH)
-        time.sleep(3)
+        time.sleep(10)
         readExcelData.read_data()
         data = readExcelData.get_data()
 
@@ -60,6 +105,7 @@ def run_bot():
         for sheet_name in sheet_names:
             symbol = sheet_name  # Ensure symbol is a string
             #logging.info(f"Symbol: {symbol}")
+            time.sleep(1)
             symbolPrice = trader.get_current_price(symbol)
             if symbolPrice is None or symbolPrice == -1:
                 telegram_sender.send_message(f"🧨 Fiyat alınırken hata oluştu {symbol}.")
@@ -117,7 +163,11 @@ def run_bot():
                         orderFilledFlag=False
                         for order in buy_orders:
                             order_id = order["orderId"]
+                            time.sleep(1)
                             status = trader.check_order_status(symbol, order_id)
+                            if status is None:
+                                logging.error(f"An error occurred while checking the order status for {order_id}.")
+                                continue
                             orderFilledFlag=False
                             if status == "FILLED":
                                 orderFilledFlag=True
@@ -218,7 +268,11 @@ def run_bot():
                         orderFilledFlag=False
                         for order in sell_orders:
                             order_id = order["orderId"]
+                            time.sleep(1)
                             status=trader.check_order_status(symbol, order_id)
+                            if status is None:
+                                logging.error(f"An error occurred while checking the order status for {order_id}.")
+                                continue
                             orderFilledFlag=False
                             if status=="FILLED":
                                 orderFilledFlag=True

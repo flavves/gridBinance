@@ -16,6 +16,8 @@ class TelegramBotRunner:
         self.app.add_handler(CommandHandler("chatid", self.handle_chatid))
         self.app.add_handler(CommandHandler("start", self.handle_start))
         self.app.add_handler(CommandHandler("stop", self.handle_stop))
+        self.app.add_handler(CommandHandler("binanceToken", self.handle_apikey))
+        self.app.add_handler(CommandHandler("binanceSecret", self.handle_apisecret))
         base_dir = os.path.dirname(os.path.abspath(__file__))
         STATE_FILE = os.path.join(base_dir, 'botStates.json')
         self.state_file = STATE_FILE
@@ -73,8 +75,30 @@ class TelegramBotRunner:
         chat_id = update.message.chat_id
         await update.message.reply_text(f"📪 Chat ID: {chat_id}")
 
+    #api keyi apikey.json dosyasına kaydet
+    async def handle_apikey(self, update: Update, context) -> None:
+        if context.args:
+            api_key = context.args[0]
+            with open("apikey.json", "w") as f:
+                json.dump({"api_key": api_key}, f)
+            await update.message.reply_text("📦 API Key kaydedildi.")
+        else:
+            await update.message.reply_text("📍 Lütfen bir API Key belirtin. Örnek: /binanceToken YOUR_API_KEY")
+
+    #api secreti apisecret.json dosyasına kaydet
+    async def handle_apisecret(self, update: Update, context) -> None:
+        if context.args:
+            api_secret = context.args[0]
+            with open("apisecret.json", "w") as f:
+                json.dump({"api_secret": api_secret}, f)
+            await update.message.reply_text("📦 API Secret kaydedildi.")
+        else:
+            await update.message.reply_text("📍 Lütfen bir API Secret belirtin. Örnek: /binanceSecret YOUR_API_SECRET")
+
     def start(self):
         self.app.run_polling()
+    
+    
 
 if __name__ == "__main__":
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
